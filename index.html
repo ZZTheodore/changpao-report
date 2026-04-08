@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>天沙河&白沙 畅跑出勤日报</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif;
+         background: #f0f2f5; color: #1a1a2e; }
+
+  .header { background: linear-gradient(135deg, #1e2230, #2d3561);
+            color: #fff; padding: 18px 16px 14px; text-align: center; }
+  .header h1 { font-size: 18px; font-weight: 700; letter-spacing: 1px; }
+  .header .sub { font-size: 12px; color: #aab4d0; margin-top: 4px; }
+
+  /* Tab */
+  .tabs { display: flex; background: #fff; border-bottom: 2px solid #e8eaf0;
+          position: sticky; top: 0; z-index: 10; }
+  .tab { flex: 1; text-align: center; padding: 12px 4px; font-size: 13px;
+         color: #666; cursor: pointer; transition: all .2s; border-bottom: 3px solid transparent;
+         margin-bottom: -2px; }
+  .tab.active { color: #2d3561; font-weight: 700; border-bottom-color: #2d3561; }
+
+  /* Panel */
+  .panel { display: none; padding: 12px; }
+  .panel.active { display: block; }
+
+  /* Card */
+  .card { background: #fff; border-radius: 12px; padding: 14px 14px 10px;
+          margin-bottom: 10px; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+  .card-title { font-size: 13px; font-weight: 600; color: #555; margin-bottom: 10px;
+                display: flex; align-items: center; gap: 6px; }
+  .card-title::before { content:''; display:inline-block; width:4px; height:14px;
+                         border-radius:2px; background:#2d3561; }
+
+  /* 出勤率大数字 */
+  .attend-row { display: flex; align-items: center; gap: 12px; padding: 6px 0; }
+  .attend-pct { font-size: 36px; font-weight: 800; }
+  .attend-detail { font-size: 13px; color: #666; line-height: 1.6; }
+  .attend-detail strong { color: #1a1a2e; }
+
+  /* 颜色 */
+  .c-green  { color: #1a8a3a; }
+  .c-orange { color: #c07000; }
+  .c-red    { color: #d02020; }
+  .c-gray   { color: #aaa; }
+  .bg-green  { background: #e8f5ec; }
+  .bg-orange { background: #fff8e6; }
+  .bg-red    { background: #fdecea; }
+  .bg-gray   { background: #f4f4f6; }
+
+  /* 时段表格 */
+  .period-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .period-table th { background: #f4f5f8; color: #666; font-weight: 600;
+                     padding: 7px 6px; text-align: left; }
+  .period-table td { padding: 8px 6px; border-bottom: 1px solid #f0f0f0; }
+  .period-table tr:last-child td { border-bottom: none; }
+  .pct-badge { display: inline-block; padding: 3px 9px; border-radius: 20px;
+               font-weight: 700; font-size: 14px; }
+  .fraction { font-size: 11px; color: #888; margin-top: 1px; }
+  .dash { color: #ccc; font-size: 18px; }
+
+  /* 人员列表 */
+  .rider-list { list-style: none; }
+  .rider-item { display: flex; align-items: flex-start; gap: 8px;
+                padding: 7px 0; border-bottom: 1px solid #f4f4f4; font-size: 14px; }
+  .rider-item:last-child { border-bottom: none; }
+  .rider-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+  .rider-name { font-weight: 600; }
+  .rider-periods { font-size: 12px; color: #888; margin-top: 2px; }
+
+  /* 站点概况 */
+  .station-row { display: flex; justify-content: space-between; align-items: center;
+                 padding: 8px 0; border-bottom: 1px solid #f0f0f0; }
+  .station-row:last-child { border-bottom: none; }
+  .station-name { font-size: 13px; color: #444; }
+  .station-pct { font-size: 20px; font-weight: 800; }
+
+  /* 空状态 */
+  .empty { color: #aaa; font-size: 13px; padding: 6px 0; text-align: center; }
+
+  /* 底部 */
+  .footer { text-align: center; padding: 16px; font-size: 12px; color: #aaa; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🏃 天沙河&白沙 畅跑出勤日报</h1>
+  <div class="sub">2026年4月8日 &nbsp;|&nbsp; 截止 15:08（实时数据）</div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab(0)">天沙河2队</div>
+  <div class="tab" onclick="switchTab(1)">天沙河3队</div>
+  <div class="tab" onclick="switchTab(2)">白沙2队</div>
+  <div class="tab" onclick="switchTab(3)">总览</div>
+</div>
+
+<!-- ===== 天沙河2队 ===== -->
+<div class="panel active" id="panel-0">
+
+  <div class="card">
+    <div class="card-title">骑手出勤率</div>
+    <div class="attend-row">
+      <div class="attend-pct c-green">91%</div>
+      <div class="attend-detail">
+        今日任意时段有完单<br>
+        <strong>20</strong> 人出勤 / 签约 <strong>22</strong> 人
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">分时段在线吻合率</div>
+    <table class="period-table">
+      <tr><th>时段</th><th>吻合率</th><th>出勤/排班</th></tr>
+      <tr>
+        <td>夜宵2<br><span style="font-size:11px;color:#aaa">00:00–06:00</span></td>
+        <td><span class="pct-badge bg-green c-green">100%</span></td>
+        <td class="fraction">1 / 1</td>
+      </tr>
+      <tr>
+        <td>早餐<br><span style="font-size:11px;color:#aaa">06:00–10:00</span></td>
+        <td><span class="pct-badge bg-orange c-orange">75%</span></td>
+        <td class="fraction">3 / 4</td>
+      </tr>
+      <tr>
+        <td>午高峰<br><span style="font-size:11px;color:#aaa">10:00–13:00</span></td>
+        <td><span class="pct-badge bg-green c-green">90%</span></td>
+        <td class="fraction">18 / 20</td>
+      </tr>
+      <tr>
+        <td>下午茶<br><span style="font-size:11px;color:#aaa">13:00–17:00</span></td>
+        <td><span class="pct-badge bg-orange c-orange">70%</span></td>
+        <td class="fraction">7 / 10</td>
+      </tr>
+      <tr>
+        <td>晚高峰<br><span style="font-size:11px;color:#aaa">17:00–20:00</span></td>
+        <td><span class="dash">—</span></td>
+        <td class="fraction c-gray">未开始</td>
+      </tr>
+      <tr>
+        <td>夜宵1<br><span style="font-size:11px;color:#aaa">20:00–24:00</span></td>
+        <td><span class="dash">—</span></td>
+        <td class="fraction c-gray">未开始</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">异常人员（排班但未完单）</div>
+    <ul class="rider-list">
+      <li class="rider-item">
+        <span class="rider-dot" style="background:#d02020"></span>
+        <div><div class="rider-name">简子安</div><div class="rider-periods">午高峰</div></div>
+      </li>
+      <li class="rider-item">
+        <span class="rider-dot" style="background:#d02020"></span>
+        <div><div class="rider-name">彭宇诚</div><div class="rider-periods">午高峰</div></div>
+      </li>
+      <li class="rider-item">
+        <span class="rider-dot" style="background:#d02020"></span>
+        <div><div class="rider-name">曾立文</div><div class="rider-periods">早餐</div></div>
+      </li>
+      <li class="rider-item">
+        <span class="rider-dot" style="background:#d02020"></span>
+        <div><div class="rider-name">陈宇犇</div><div class="rider-periods">下午茶</div></div>
+      </li>
+      <li class="rider-item">
+        <span class="rider-dot" style="background:#d02020"></span>
+        <div><div class="rider-name">林海祥</div><div class="rider-periods">下午茶</div></div>
+      </li>
+      <li class="rider-item">
+        <span class="rider-dot" style="background:#d02020"></span>
+        <div><div class="rider-name">施文杰</div><div class="rider-periods">下午茶</div></div>
+      </li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="card-title">休息人员（今日有事）</div>
+    <ul class="rider-list">
+      <li class="rider-item">
+        <span class="rider-dot" style="background:#aaa"></span>
+        <div><div class="rider-name">宁坤峰</div></div>
+      </li>
+    </ul>
+  </div>
+
+</div>
+
+<!-- ===== 天沙河3队 ===== -->
+<div class="panel" id="panel-1">
+
+  <div class="card">
+    <div class="card-title">骑手出勤率</div>
+    <div class="attend-row">
+      <div class="attend-pct c-green">91%</div>
+      <div class="attend-detail">
+        今日任意时段有完单<br>
+        <strong>20</strong> 人出勤 / 签约 <strong>22</strong> 人
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">分时段在线吻合率</div>
+    <table class="period-table">
+      <tr><th>时段</th><th>吻合率</th><th>出勤/排班</th></tr>
+      <tr>
+        <td>夜宵2<br><span style="font-size:11px;color:#aaa">00:00–06:00</span></td>
+        <td><span class="pct-badge bg-orange c-orange">50%</span></td>
+        <td class="fraction">1 / 2</td>
+      </tr>
+      <tr>
+        <td>早餐<br><span style="font-size:11px;color:#aaa">06:00–10:00</span></td>
+        <td><span class="pct-badge bg-green c-green">100%</span></td>
+        <td class="fraction">1 / 1</td>
+      </tr>
+      <tr>
+        <td>午高峰<br><span style="font-size:11px;color:#aaa">10:00–13:00</span></td>
+        <td><span class="pct-badge bg-green c-green">89%</span></td>
+        <td class="fraction">16 / 18</td>
+      </tr>
+      <tr>
+        <td>下午茶<br><span style="font-size:11px;color:#aaa">13:00–17:00</span></td>
+        <td><span class="pct-badge bg-red c-red">62%</span></td>
+        <td class="fraction">5 / 8</td>
+      </tr>
+      <tr>
+        <td>晚高峰<br><span style="font-size:11px;color:#aaa">17:00–20:00</span></td>
+        <td><span class="dash">—</span></td>
+        <td class="fraction c-gray">未开始</td>
+      </tr>
+      <tr>
+        <td>夜宵1<br><span style="font-size:11px;color:#aaa">20:00–24:00</span></td>
+        <td><span class="dash">—</span></td>
+        <td class="fraction c-gray">未开始</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">异常人员（排班但未完单）</div>
+    <ul class="rider-list">
+      <li class="rider-item">
+        <span class="rider-dot" style="background:#d02020"></span>
+        <div><div class="rider-name">岑泽锋</div><div class="rider-periods">夜宵2、午高峰</div></div>
+      </li>
+      <li class="rider-item">
+        <span class="rider-dot" style="background:#d02020"></span>
+        <div><div class="rider-name">马飞龙</div><div class="rider-periods">午高峰</div></div>
+      </li>
+      <li class="rider-item">
+        <span class="rider-dot" style="background:#d02020"></span>
+        <div><div class="rider-name">胡文熹</div><div class="rider-periods">下午茶</div></div>
+      </li>
+      <li class="rider-item">
+        <span class="rider-dot" style="background:#d02020"></span>
+        <div><div class="rider-name">黄嘉裕</div><div class="rider-periods">下午茶</div></div>
+      </li>
+      <li class="rider-item">
+        <span class="rider-dot" style="background:#d02020"></span>
+        <div><div class="rider-name">陈文锐</div><div class="rider-periods">下午茶</div></div>
+      </li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="card-title">休息人员（今日有事）</div>
+    <ul class="rider-list">
+      <li class="rider-item">
+        <span class="rider-dot" style="background:#aaa"></span>
+        <div><div class="rider-name">游海辉</div></div>
+      </li>
+    </ul>
+  </div>
+
+</div>
+
+<!-- ===== 白沙2队 ===== -->
+<div class="panel" id="panel-2">
+
+  <div class="card">
+    <div class="card-title">骑手出勤率</div>
+    <div class="attend-row">
+      <div class="attend-pct c-green">92%</div>
+      <div class="attend-detail">
+        今日任意时段有完单<br>
+        <strong>36</strong> 人出勤 / 签约 <strong>39</strong> 人
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">分时段在线吻合率</div>
+    <table class="period-table">
+      <tr><th>时段</th><th>吻合率</th><th>出勤/排班</th></tr>
+      <tr>
+        <td>夜宵2<br><span style="font-size:11px;color:#aaa">00:00–06:00</span></td>
+        <td><span class="pct-badge bg-red c-red">0%</span></td>
+        <td class="fraction">0 / 2</td>
+      </tr>
+      <tr>
+        <td>早餐<br><span style="font-size:11px;color:#aaa">06:00–10:00</span></td>
+        <td><span class="pct-badge bg-green c-green">88%</span></td>
+        <td class="fraction">7 / 8</td>
+      </tr>
+      <tr>
+        <td>午高峰<br><span style="font-size:11px;color:#aaa">10:00–13:00</span></td>
+        <td><span class="pct-badge bg-green c-green">97%</span></td>
+        <td class="fraction">34 / 35</td>
+      </tr>
+      <tr>
+        <td>下午茶<br><span style="font-size:11px;color:#aaa">13:00–17:00</span></td>
+        <td><span class="pct-badge bg-green c-green">90%</span></td>
+        <td class="fraction">18 / 20</td>
+      </tr>
+      <tr>
+        <td>晚高峰<br><span style="font-size:11px;color:#aaa">17:00–20:00</span></td>
+        <td><span class="dash">—</span></td>
+        <td class="fraction c-gray">未开始</td>
+      </tr>
+      <tr>
+        <td>夜宵1<br><span style="font-size:11px;color:#aaa">20:00–24:00</span></td>
+        <td><span class="dash">—</span></td>
+        <td class="fraction c-gray">未开始</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">异常人员（排班但未完单）</div>
+    <ul class="rider-list">
+      <li class="rider-item">
+        <span class="rider-dot" style="background:#d02020"></span>
+        <div><div class="rider-name">梁家琪</div><div class="rider-periods">夜宵2</div></div>
+      </li>
+      <li class="rider-item">
+        <span class="rider-dot" style="background:#d02020"></span>
+        <div><div class="rider-name">王峰</div><div class="rider-periods">夜宵2</div></div>
+      </li>
+      <li class="rider-item">
+        <span class="rider-dot" style="background:#d02020"></span>
+        <div><div class="rider-name">黄洪镇</div><div class="rider-periods">早餐</div></div>
+      </li>
+      <li class="rider-item">
+        <span class="rider-dot" style="background:#d02020"></span>
+        <div><div class="rider-name">黄水杰</div><div class="rider-periods">午高峰</div></div>
+      </li>
+      <li class="rider-item">
+        <span class="rider-dot" style="background:#d02020"></span>
+        <div><div class="rider-name">关嘉柏</div><div class="rider-periods">下午茶</div></div>
+      </li>
+      <li class="rider-item">
+        <span class="rider-dot" style="background:#d02020"></span>
+        <div><div class="rider-name">黄贵长</div><div class="rider-periods">下午茶</div></div>
+      </li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="card-title">休息人员（今日有事）</div>
+    <ul class="rider-list">
+      <li class="rider-item">
+        <span class="rider-dot" style="background:#aaa"></span>
+        <div><div class="rider-name">梁毅忠</div></div>
+      </li>
+      <li class="rider-item">
+        <span class="rider-dot" style="background:#aaa"></span>
+        <div><div class="rider-name">伍海漂</div></div>
+      </li>
+    </ul>
+  </div>
+
+</div>
+
+<!-- ===== 总览 ===== -->
+<div class="panel" id="panel-3">
+
+  <div class="card">
+    <div class="card-title">站点维度 - 整体吻合率</div>
+    <div class="station-row">
+      <div class="station-name">江门市内天沙河众包</div>
+      <div class="station-pct c-orange">78%<span style="font-size:13px;color:#888;font-weight:400"> 64/82</span></div>
+    </div>
+    <div class="station-row">
+      <div class="station-name">江门市内白沙众包</div>
+      <div class="station-pct c-green">91%<span style="font-size:13px;color:#888;font-weight:400"> 77/85</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">小队出勤率汇总（本期签约83人）</div>
+    <div class="station-row">
+      <div class="station-name">天沙河畅跑2队</div>
+      <div class="station-pct c-green">91%<span style="font-size:13px;color:#888;font-weight:400"> 20/22</span></div>
+    </div>
+    <div class="station-row">
+      <div class="station-name">天沙河畅跑3队</div>
+      <div class="station-pct c-green">91%<span style="font-size:13px;color:#888;font-weight:400"> 20/22</span></div>
+    </div>
+    <div class="station-row">
+      <div class="station-name">白沙畅跑2队</div>
+      <div class="station-pct c-green">92%<span style="font-size:13px;color:#888;font-weight:400"> 36/39</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">⚠️ 重点关注（吻合率 &lt; 90% 时段）</div>
+    <ul class="rider-list">
+      <li class="rider-item">
+        <span class="rider-dot" style="background:#c07000"></span>
+        <div><div class="rider-name">天沙河2队 · 早餐</div><div class="rider-periods">75%（3/4），缺1班次</div></div>
+      </li>
+      <li class="rider-item">
+        <span class="rider-dot" style="background:#c07000"></span>
+        <div><div class="rider-name">天沙河2队 · 下午茶</div><div class="rider-periods">70%（7/10），缺3班次</div></div>
+      </li>
+      <li class="rider-item">
+        <span class="rider-dot" style="background:#d02020"></span>
+        <div><div class="rider-name">天沙河3队 · 夜宵2</div><div class="rider-periods">50%（1/2），缺1班次</div></div>
+      </li>
+      <li class="rider-item">
+        <span class="rider-dot" style="background:#d02020"></span>
+        <div><div class="rider-name">天沙河3队 · 下午茶</div><div class="rider-periods">62%（5/8），缺3班次</div></div>
+      </li>
+      <li class="rider-item">
+        <span class="rider-dot" style="background:#d02020"></span>
+        <div><div class="rider-name">白沙2队 · 夜宵2</div><div class="rider-periods">0%（0/2），缺2班次</div></div>
+      </li>
+      <li class="rider-item">
+        <span class="rider-dot" style="background:#c07000"></span>
+        <div><div class="rider-name">白沙2队 · 早餐</div><div class="rider-periods">88%（7/8），缺1班次</div></div>
+      </li>
+    </ul>
+  </div>
+
+</div>
+
+<div class="footer">——来自小龙咪AI助理分析</div>
+
+<script>
+function switchTab(idx) {
+  document.querySelectorAll('.tab').forEach((t,i)=> t.classList.toggle('active', i===idx));
+  document.querySelectorAll('.panel').forEach((p,i)=> p.classList.toggle('active', i===idx));
+}
+</script>
+</body>
+</html>
