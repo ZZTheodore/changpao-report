@@ -3,504 +3,219 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>畅跑排班吻合率看板 · 江门</title>
+<title>近4周排班吻合率看板 | 江门区域</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; background: #f0f2f5; color: #1f2937; font-size: 14px; }
-  
-  /* 顶部大标题 */
-  .header { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
-  .header-left h1 { font-size: 20px; font-weight: 700; }
-  .header-left .subtitle { font-size: 12px; opacity: 0.85; margin-top: 4px; }
-  .header-left .dateline { font-size: 12px; opacity: 0.75; margin-top: 2px; }
-  .header-right { text-align: right; }
-  .header-right .big-rate { font-size: 42px; font-weight: 800; line-height: 1; }
-  .header-right .big-rate-label { font-size: 12px; opacity: 0.85; margin-top: 4px; }
-  .header-right .update-time { font-size: 11px; opacity: 0.7; }
-  
-  /* 卡片区 */
-  .container { max-width: 960px; margin: 0 auto; padding: 16px; }
-  .card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
-  .card-title { font-size: 15px; font-weight: 700; color: #1e40af; border-left: 3px solid #2563eb; padding-left: 10px; margin-bottom: 14px; }
-  
-  /* 当前时段banner */
-  .cur-period-banner { background: #fffbeb; border: 1.5px solid #f59e0b; border-radius: 10px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
-  .cur-period-left { display: flex; align-items: center; gap: 8px; }
-  .cur-period-tag { background: #f59e0b; color: white; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; }
-  .cur-period-name { font-size: 15px; font-weight: 700; }
-  .cur-period-time { font-size: 12px; color: #6b7280; }
-  .cur-period-nums { display: flex; gap: 20px; }
-  .cur-period-num { text-align: center; }
-  .cur-period-num .val { font-size: 20px; font-weight: 700; }
-  .cur-period-num .lbl { font-size: 11px; color: #6b7280; }
-  .val-blue { color: #2563eb; }
-  .val-green { color: #22c55e; }
-  .val-red { color: #ef4444; }
-  
-  /* KPI卡片 */
-  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px; }
-  .kpi-card { background: #f8fafc; border-radius: 10px; padding: 12px; text-align: center; border: 1px solid #e2e8f0; }
-  .kpi-val { font-size: 24px; font-weight: 800; }
-  .kpi-lbl { font-size: 11px; color: #6b7280; margin-top: 3px; }
-  
-  /* 时段×小队热力表 */
-  .heat-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-  .heat-table th { background: #f8fafc; padding: 7px 6px; text-align: center; font-weight: 600; color: #374151; border-bottom: 2px solid #e5e7eb; white-space: nowrap; }
-  .heat-table th.period-cur { background: #fffbeb; color: #d97706; }
-  .heat-table td { padding: 7px 6px; text-align: center; border-bottom: 1px solid #f3f4f6; }
-  .heat-table td.squad-name { text-align: left; font-weight: 500; padding-left: 8px; white-space: nowrap; color: #374151; }
-  .heat-table tr:hover td { background: #f9fafb; }
-  .rate-cell { border-radius: 6px; padding: 3px 5px; font-weight: 600; font-size: 12px; display: inline-block; min-width: 42px; }
-  .rate-future { color: #9ca3af; font-weight: 400; }
-  
-  /* 小队明细卡片 */
-  .squad-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-  @media (max-width: 600px) { .squad-grid { grid-template-columns: 1fr; } .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
-  .squad-card { background: #f8fafc; border-radius: 10px; padding: 12px; border: 1px solid #e2e8f0; }
-  .squad-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
-  .squad-card-name { font-size: 13px; font-weight: 700; color: #1e3a5f; }
-  .squad-card-station { font-size: 10px; color: #6b7280; margin-top: 2px; }
-  .squad-card-rate { font-size: 18px; font-weight: 800; }
-  .squad-periods { display: flex; flex-wrap: wrap; gap: 5px; }
-  .period-pill { display: flex; align-items: center; gap: 3px; padding: 3px 8px; border-radius: 20px; font-size: 11px; font-weight: 500; }
-  .period-pill-label { font-size: 10px; }
-  
-  /* 未出勤列表 */
-  .noshow-list { display: flex; flex-wrap: wrap; gap: 6px; }
-  .noshow-badge { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; border-radius: 6px; padding: 4px 10px; font-size: 12px; }
-  .noshow-badge span { color: #6b7280; font-size: 11px; }
-  
-  /* 总结区 */
-  .summary-row { display: flex; flex-wrap: wrap; gap: 10px; }
-  .summary-badge { display: flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; }
-  .badge-green { background: #f0fdf4; color: #166534; }
-  .badge-orange { background: #fffbeb; color: #92400e; }
-  .badge-red { background: #fef2f2; color: #991b1b; }
-  
-  .footer { text-align: center; color: #9ca3af; font-size: 11px; padding: 12px; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB',sans-serif;
+       background:linear-gradient(135deg,#f5f7fa 0%,#c3cfe2 100%); min-height:100vh; padding:20px; }
+.container { max-width:1400px; margin:0 auto; }
+.header { text-align:center; padding:30px 20px; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+           border-radius:16px; margin-bottom:24px; color:white; box-shadow:0 10px 40px rgba(102,126,234,0.3); }
+.header h1 { font-size:28px; margin-bottom:8px; }
+.header p { opacity:0.85; font-size:14px; }
+.top-cards { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:24px; }
+.top-card { background:white; border-radius:12px; padding:20px; text-align:center;
+             box-shadow:0 4px 20px rgba(0,0,0,0.08); }
+.top-card .label { font-size:12px; color:#666; margin-bottom:4px; }
+.top-card .value { font-size:32px; font-weight:700; }
+.top-card .value.green { color:#006100; }
+.top-card .value.yellow { color:#9C5700; }
+.top-card .value.red { color:#9C0006; }
+.top-card .sub { font-size:11px; color:#999; margin-top:4px; }
+.section { background:white; border-radius:12px; padding:24px; margin-bottom:20px;
+            box-shadow:0 4px 20px rgba(0,0,0,0.08); }
+.section h2 { font-size:18px; margin-bottom:16px; color:#333; }
+.summary-cards { display:flex; gap:16px; margin-bottom:16px; }
+.card { background:#f8f9fc; border-radius:8px; padding:12px 16px; flex:1; text-align:center; }
+.card-label { font-size:11px; color:#666; }
+.card-value { font-size:20px; font-weight:700; margin-top:4px; }
+.card-value.green { color:#006100; }
+.card-value.yellow { color:#9C5700; }
+.card-value.red { color:#9C0006; }
+table { width:100%; border-collapse:collapse; font-size:12px; }
+thead th { background:#f1f3f8; padding:8px 4px; text-align:center; font-weight:600;
+            border-bottom:2px solid #e0e0e0; white-space:nowrap; }
+.sub-header th { padding:4px; font-size:11px; font-weight:500; border-bottom:1px solid #eee; }
+tbody td { padding:6px 4px; text-align:center; border-bottom:1px solid #f0f0f0; }
+tbody tr:hover { background:#f8f9ff; }
+.rank { font-weight:700; color:#666; width:30px; }
+.team { text-align:left!important; font-weight:500; white-space:nowrap; }
+.rate { min-width:42px; }
+.rate.green { background:#e8f5e9; color:#2e7d32; }
+.rate.yellow { background:#fff8e1; color:#f57f17; }
+.rate.red { background:#fce4ec; color:#c62828; }
+.rate.avg { font-weight:700; }
+.cnt { min-width:36px; color:#555; }
+.cnt.avg { font-weight:700; }
+.spark { padding:2px; }
+.total { background:#e8eaf6!important; }
+.total td { border-top:2px solid #7986cb; font-weight:600; }
+.footer { text-align:center; padding:16px; color:#999; font-size:12px; }
+@media (max-width:768px) {
+    .top-cards { grid-template-columns:1fr; }
+    table { font-size:10px; }
+    .section { padding:12px; overflow-x:auto; }
+}
 </style>
 </head>
 <body>
-
-<!-- 顶部标题栏 -->
-<div class="header">
-  <div class="header-left">
-    <h1>🐾 畅跑排班吻合率看板</h1>
-    <div class="subtitle">天沙河 / 白沙 / 新会 / 北新区 · 四站点 · 10个小队 · 站长视角</div>
-    <div class="dateline">📅 2026年04月21日（周二）</div>
-  </div>
-  <div class="header-right">
-    <div class="big-rate">96%</div>
-    <div class="big-rate-label">今日整体吻合率</div>
-    <div class="update-time">数据更新：17:52</div>
-  </div>
-</div>
-
 <div class="container">
-
-<!-- 今日实时总览 -->
-<div class="card">
-  <div class="card-title">📊 今日实时总览</div>
-  
-  <!-- 当前时段banner -->
-  <div class="cur-period-banner">
-    <div class="cur-period-left">
-      <span class="cur-period-tag">当前时段</span>
-      <span class="cur-period-name">🌆 晚高峰</span>
-      <span class="cur-period-time">17:00-20:00</span>
-    </div>
-    <div class="cur-period-nums">
-      <div class="cur-period-num">
-        <div class="val val-blue">226</div>
-        <div class="lbl">排班总数</div>
-      </div>
-      <div class="cur-period-num">
-        <div class="val val-green">214</div>
-        <div class="lbl">排班已出勤</div>
-      </div>
-      <div class="cur-period-num">
-        <div class="val val-red">12</div>
-        <div class="lbl">排班未出勤</div>
-      </div>
-    </div>
-  </div>
-  
-  <!-- KPI卡片 -->
-  <div class="kpi-grid">
-    <div class="kpi-card">
-      <div class="kpi-val" style="color:#22c55e">96%</div>
-      <div class="kpi-lbl">今日整体吻合率</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-val" style="color:#ef4444">12</div>
-      <div class="kpi-lbl">当前排班未出勤</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-val" style="color:#6366f1">280</div>
-      <div class="kpi-lbl">签约骑手总数</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-val" style="color:#22c55e">258<span style="font-size:14px;color:#6b7280">/280</span></div>
-      <div class="kpi-lbl">今日已出勤</div>
-    </div>
-  </div>
+<div class="header">
+    <h1>📊 近4周排班吻合率看板</h1>
+    <p>江门区域 | 统计周期：2026.5.4 - 2026.5.31 | 共20个小队</p>
 </div>
 
-<!-- 时段×小队吻合率热力表 -->
-<div class="card">
-  <div class="card-title">🔥 小队 × 时段吻合率</div>
-  <div style="overflow-x:auto">
-  <table class="heat-table">
-    <thead>
-      <tr>
-        <th>小队</th>
-        <th class="period-cur">🍳 早餐</th>
-        <th class="period-cur">☀️ 午高峰</th>
-        <th class="period-cur">🧋 下午茶</th>
-        <th class="period-cur period-cur">🌆 晚高峰 进行中</th>
-        <th class="period-cur">🌙 夜宵1</th>
-        <th class="period-cur">🌃 夜宵2</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td class="squad-name">天沙河畅跑2队</td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">100%</div><div style="font-size:10px;color:#9ca3af">3/3</div></td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">93%</div><div style="font-size:10px;color:#9ca3af">14/15</div></td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">92%</div><div style="font-size:10px;color:#9ca3af">12/13</div></td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">94%</div><div style="font-size:10px;color:#9ca3af">15/16</div></td>
-        <td><span class="rate-future">—</span></td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">100%</div><div style="font-size:10px;color:#9ca3af">2/2</div></td>
-      </tr>
-      <tr>
-        <td class="squad-name">天沙河畅跑3队</td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">100%</div><div style="font-size:10px;color:#9ca3af">4/4</div></td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">100%</div><div style="font-size:10px;color:#9ca3af">14/14</div></td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">100%</div><div style="font-size:10px;color:#9ca3af">14/14</div></td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">92%</div><div style="font-size:10px;color:#9ca3af">12/13</div></td>
-        <td><span class="rate-future">—</span></td>
-        <td><div class="rate-cell" style="color:#999;background:#f3f4f6">0%</div><div style="font-size:10px;color:#9ca3af">0/1</div></td>
-      </tr>
-      <tr>
-        <td class="squad-name">白沙畅跑1队</td>
-        <td><div class="rate-cell" style="color:#999;background:#f3f4f6">0%</div><div style="font-size:10px;color:#9ca3af">0/0</div></td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">100%</div><div style="font-size:10px;color:#9ca3af">8/8</div></td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">100%</div><div style="font-size:10px;color:#9ca3af">8/8</div></td>
-        <td><div class="rate-cell" style="color:#f59e0b;background:#fffbeb">88%</div><div style="font-size:10px;color:#9ca3af">7/8</div></td>
-        <td><span class="rate-future">—</span></td>
-        <td><div class="rate-cell" style="color:#999;background:#f3f4f6">0%</div><div style="font-size:10px;color:#9ca3af">0/0</div></td>
-      </tr>
-      <tr>
-        <td class="squad-name">白沙畅跑2队</td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">100%</div><div style="font-size:10px;color:#9ca3af">12/12</div></td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">97%</div><div style="font-size:10px;color:#9ca3af">29/30</div></td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">100%</div><div style="font-size:10px;color:#9ca3af">23/23</div></td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">96%</div><div style="font-size:10px;color:#9ca3af">22/23</div></td>
-        <td><span class="rate-future">—</span></td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">100%</div><div style="font-size:10px;color:#9ca3af">1/1</div></td>
-      </tr>
-      <tr>
-        <td class="squad-name">新会畅跑1队</td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">100%</div><div style="font-size:10px;color:#9ca3af">7/7</div></td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">94%</div><div style="font-size:10px;color:#9ca3af">31/33</div></td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">93%</div><div style="font-size:10px;color:#9ca3af">28/30</div></td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">94%</div><div style="font-size:10px;color:#9ca3af">31/33</div></td>
-        <td><span class="rate-future">—</span></td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">100%</div><div style="font-size:10px;color:#9ca3af">3/3</div></td>
-      </tr>
-      <tr>
-        <td class="squad-name">新会畅跑2队</td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">100%</div><div style="font-size:10px;color:#9ca3af">9/9</div></td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">91%</div><div style="font-size:10px;color:#9ca3af">21/23</div></td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">93%</div><div style="font-size:10px;color:#9ca3af">13/14</div></td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">90%</div><div style="font-size:10px;color:#9ca3af">18/20</div></td>
-        <td><span class="rate-future">—</span></td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">100%</div><div style="font-size:10px;color:#9ca3af">3/3</div></td>
-      </tr>
-      <tr>
-        <td class="squad-name">新会畅跑3队</td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">100%</div><div style="font-size:10px;color:#9ca3af">7/7</div></td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">100%</div><div style="font-size:10px;color:#9ca3af">29/29</div></td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">100%</div><div style="font-size:10px;color:#9ca3af">23/23</div></td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">100%</div><div style="font-size:10px;color:#9ca3af">25/25</div></td>
-        <td><span class="rate-future">—</span></td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">100%</div><div style="font-size:10px;color:#9ca3af">2/2</div></td>
-      </tr>
-      <tr>
-        <td class="squad-name">新会畅跑4队</td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">100%</div><div style="font-size:10px;color:#9ca3af">8/8</div></td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">95%</div><div style="font-size:10px;color:#9ca3af">35/37</div></td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">100%</div><div style="font-size:10px;color:#9ca3af">24/24</div></td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">93%</div><div style="font-size:10px;color:#9ca3af">28/30</div></td>
-        <td><span class="rate-future">—</span></td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">100%</div><div style="font-size:10px;color:#9ca3af">3/3</div></td>
-      </tr>
-      <tr>
-        <td class="squad-name">北新畅跑1队</td>
-        <td><div class="rate-cell" style="color:#f59e0b;background:#fffbeb">86%</div><div style="font-size:10px;color:#9ca3af">6/7</div></td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">94%</div><div style="font-size:10px;color:#9ca3af">29/31</div></td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">92%</div><div style="font-size:10px;color:#9ca3af">24/26</div></td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">93%</div><div style="font-size:10px;color:#9ca3af">25/27</div></td>
-        <td><span class="rate-future">—</span></td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">100%</div><div style="font-size:10px;color:#9ca3af">2/2</div></td>
-      </tr>
-      <tr>
-        <td class="squad-name">北新畅跑3队</td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">100%</div><div style="font-size:10px;color:#9ca3af">9/9</div></td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">100%</div><div style="font-size:10px;color:#9ca3af">29/29</div></td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">100%</div><div style="font-size:10px;color:#9ca3af">27/27</div></td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">100%</div><div style="font-size:10px;color:#9ca3af">31/31</div></td>
-        <td><span class="rate-future">—</span></td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">100%</div><div style="font-size:10px;color:#9ca3af">1/1</div></td>
-      </tr>
-      <tr style="border-top:2px solid #e5e7eb;font-weight:700">
-        <td class="squad-name">整体</td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">98%</div><div style="font-size:10px;color:#9ca3af">65/66</div></td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">96%</div><div style="font-size:10px;color:#9ca3af">239/249</div></td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">97%</div><div style="font-size:10px;color:#9ca3af">196/202</div></td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">95%</div><div style="font-size:10px;color:#9ca3af">214/226</div></td>
-        <td><span class="rate-future">—</span></td>
-        <td><div class="rate-cell" style="color:#22c55e;background:#f0fdf4">94%</div><div style="font-size:10px;color:#9ca3af">17/18</div></td>
-      </tr>
-    </tbody>
-  </table>
-  </div>
+<div class="top-cards">
+    <div class="top-card">
+        <div class="label">综合吻合率（乐跑+畅跑）</div>
+        <div class="value green">96.3%</div>
+        <div class="sub">4周平均 | 覆盖5574人次/周</div>
+    </div>
+    <div class="top-card">
+        <div class="label">乐跑吻合率</div>
+        <div class="value green">98.3%</div>
+        <div class="sub">4周平均 | 899人/周</div>
+    </div>
+    <div class="top-card">
+        <div class="label">畅跑吻合率</div>
+        <div class="value yellow">91.9%</div>
+        <div class="sub">4周平均 | 494人/周</div>
+    </div>
 </div>
 
-<div class="card">
-  <div class="card-title">⚠️ 晚高峰时段排班未出勤（12人）</div>
-  <div class="noshow-list">
-    <div class="noshow-badge">陈军海<span>（天沙河畅跑2队·收工）</span></div>
-    <div class="noshow-badge">杨超琦<span>（天沙河畅跑3队·在线）</span></div>
-    <div class="noshow-badge">彭奇<span>（白沙畅跑1队·收工）</span></div>
-    <div class="noshow-badge">梁金辉<span>（白沙畅跑2队·收工）</span></div>
-    <div class="noshow-badge">江灿新<span>（新会畅跑1队·收工）</span></div>
-    <div class="noshow-badge">植文杰<span>（新会畅跑1队·收工）</span></div>
-    <div class="noshow-badge">李锦荣<span>（新会畅跑2队·在线）</span></div>
-    <div class="noshow-badge">陈国宁<span>（新会畅跑2队·在线）</span></div>
-    <div class="noshow-badge">梁国政<span>（新会畅跑4队·在线）</span></div>
-    <div class="noshow-badge">冯建川<span>（新会畅跑4队·在线）</span></div>
-    <div class="noshow-badge">周春叶<span>（北新畅跑1队·收工）</span></div>
-    <div class="noshow-badge">余锐锋<span>（北新畅跑1队·收工）</span></div>
-  </div>
+<div class="section">
+    <h2 style="border-left:4px solid #4472C4;padding-left:12px">综合（乐跑+畅跑）</h2>
+    <div class="summary-cards">
+        <div class="card"><div class="card-label">4周平均吻合率</div><div class="card-value green">96.3%</div></div>
+        <div class="card"><div class="card-label">4周平均人数</div><div class="card-value">1393.5</div></div>
+        <div class="card"><div class="card-label">趋势</div><div class="card-value"><svg width="100" height="30" viewBox="0 0 100 30"><polyline points="0.0,11.1 33.3,10.7 66.7,14.2 100.0,11.1" fill="none" stroke="#4472C4" stroke-width="2"/><circle cx="0.0" cy="11.1" r="2.5" fill="#4472C4"/><circle cx="33.3" cy="10.7" r="2.5" fill="#4472C4"/><circle cx="66.7" cy="14.2" r="2.5" fill="#4472C4"/><circle cx="100.0" cy="11.1" r="2.5" fill="#4472C4"/></svg></div></div>
+    </div>
+    <table>
+    <thead><tr>
+        <th>排名</th><th>小队</th>
+        <th>5/4-5/10</th><th>5/11-5/17</th><th>5/18-5/24</th><th>5/25-5/31</th>
+        <th>4周平均</th><th>趋势</th>
+        <th>5/4-5/10</th><th>5/11-5/17</th><th>5/18-5/24</th><th>5/25-5/31</th>
+        <th>平均</th><th>趋势</th>
+    </tr>
+    <tr class="sub-header">
+        <th colspan="2"></th>
+        <th colspan="6" style="background:#4472C420;color:#4472C4">吻合率</th>
+        <th colspan="6" style="background:#ED7D3120;color:#ED7D31">人数规模</th>
+    </tr>
+    </thead><tbody>
+<tr><td class="rank">1</td><td class="team">开平2队</td><td class="rate green">98.1</td><td class="rate green">98.8</td><td class="rate green">97.0</td><td class="rate green">98.9</td><td class="rate avg green"><b>98.1</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,4.8 20.0,3.0 40.0,7.5 60.0,2.7" fill="none" stroke="#4472C4" stroke-width="2"/><circle cx="0.0" cy="4.8" r="2.5" fill="#4472C4"/><circle cx="20.0" cy="3.0" r="2.5" fill="#4472C4"/><circle cx="40.0" cy="7.5" r="2.5" fill="#4472C4"/><circle cx="60.0" cy="2.7" r="2.5" fill="#4472C4"/></svg></td><td class="cnt">77</td><td class="cnt">70</td><td class="cnt">66</td><td class="cnt">64</td><td class="cnt avg"><b>69.2</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,4.3 20.0,10.4 40.0,13.9 60.0,15.7" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="4.3" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="10.4" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="13.9" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="15.7" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">2</td><td class="team">港口2队</td><td class="rate green">98.2</td><td class="rate green">97.8</td><td class="rate green">97.7</td><td class="rate green">98.4</td><td class="rate avg green"><b>98.0</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,4.9 20.0,6.0 40.0,6.3 60.0,4.4" fill="none" stroke="#4472C4" stroke-width="2"/><circle cx="0.0" cy="4.9" r="2.5" fill="#4472C4"/><circle cx="20.0" cy="6.0" r="2.5" fill="#4472C4"/><circle cx="40.0" cy="6.3" r="2.5" fill="#4472C4"/><circle cx="60.0" cy="4.4" r="2.5" fill="#4472C4"/></svg></td><td class="cnt">76</td><td class="cnt">77</td><td class="cnt">74</td><td class="cnt">73</td><td class="cnt avg"><b>75.0</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,8.6 20.0,7.1 40.0,11.4 60.0,12.9" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="8.6" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="7.1" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="11.4" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="12.9" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">3</td><td class="team">北新区三队</td><td class="rate green">98.0</td><td class="rate green">97.5</td><td class="rate green">97.8</td><td class="rate green">98.0</td><td class="rate avg green"><b>97.8</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,5.3 20.0,6.7 40.0,5.9 60.0,5.3" fill="none" stroke="#4472C4" stroke-width="2"/><circle cx="0.0" cy="5.3" r="2.5" fill="#4472C4"/><circle cx="20.0" cy="6.7" r="2.5" fill="#4472C4"/><circle cx="40.0" cy="5.9" r="2.5" fill="#4472C4"/><circle cx="60.0" cy="5.3" r="2.5" fill="#4472C4"/></svg></td><td class="cnt">104</td><td class="cnt">98</td><td class="cnt">95</td><td class="cnt">96</td><td class="cnt avg"><b>98.2</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,5.3 20.0,11.6 40.0,14.7 60.0,13.7" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="5.3" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="11.6" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="14.7" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="13.7" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">4</td><td class="team">北新区1队</td><td class="rate green">97.3</td><td class="rate green">97.9</td><td class="rate green">95.9</td><td class="rate green">98.8</td><td class="rate avg green"><b>97.5</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,5.9 20.0,4.6 40.0,9.0 60.0,2.6" fill="none" stroke="#4472C4" stroke-width="2"/><circle cx="0.0" cy="5.9" r="2.5" fill="#4472C4"/><circle cx="20.0" cy="4.6" r="2.5" fill="#4472C4"/><circle cx="40.0" cy="9.0" r="2.5" fill="#4472C4"/><circle cx="60.0" cy="2.6" r="2.5" fill="#4472C4"/></svg></td><td class="cnt">91</td><td class="cnt">96</td><td class="cnt">97</td><td class="cnt">97</td><td class="cnt avg"><b>95.2</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,13.8 20.0,7.5 40.0,6.2 60.0,6.2" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="13.8" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="7.5" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="6.2" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="6.2" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">5</td><td class="team">江海2队</td><td class="rate green">97.0</td><td class="rate green">98.0</td><td class="rate green">97.2</td><td class="rate green">97.9</td><td class="rate avg green"><b>97.5</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,7.5 20.0,5.0 40.0,7.0 60.0,5.2" fill="none" stroke="#4472C4" stroke-width="2"/><circle cx="0.0" cy="7.5" r="2.5" fill="#4472C4"/><circle cx="20.0" cy="5.0" r="2.5" fill="#4472C4"/><circle cx="40.0" cy="7.0" r="2.5" fill="#4472C4"/><circle cx="60.0" cy="5.2" r="2.5" fill="#4472C4"/></svg></td><td class="cnt">107</td><td class="cnt">101</td><td class="cnt">100</td><td class="cnt">98</td><td class="cnt avg"><b>101.5</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,5.3 20.0,11.6 40.0,12.6 60.0,14.7" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="5.3" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="11.6" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="12.6" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="14.7" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">6</td><td class="team">新会3队</td><td class="rate green">97.8</td><td class="rate green">97.1</td><td class="rate green">97.3</td><td class="rate green">97.0</td><td class="rate avg green"><b>97.3</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,5.5 20.0,7.3 40.0,6.8 60.0,7.5" fill="none" stroke="#4472C4" stroke-width="2"/><circle cx="0.0" cy="5.5" r="2.5" fill="#4472C4"/><circle cx="20.0" cy="7.3" r="2.5" fill="#4472C4"/><circle cx="40.0" cy="6.8" r="2.5" fill="#4472C4"/><circle cx="60.0" cy="7.5" r="2.5" fill="#4472C4"/></svg></td><td class="cnt">79</td><td class="cnt">80</td><td class="cnt">77</td><td class="cnt">80</td><td class="cnt avg"><b>79.0</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,9.2 20.0,7.7 40.0,12.3 60.0,7.7" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="9.2" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="7.7" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="12.3" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="7.7" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">7</td><td class="team">新会1队</td><td class="rate green">95.6</td><td class="rate green">97.8</td><td class="rate green">97.7</td><td class="rate green">97.5</td><td class="rate avg green"><b>97.2</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,9.4 20.0,4.7 40.0,4.9 60.0,5.3" fill="none" stroke="#4472C4" stroke-width="2"/><circle cx="0.0" cy="9.4" r="2.5" fill="#4472C4"/><circle cx="20.0" cy="4.7" r="2.5" fill="#4472C4"/><circle cx="40.0" cy="4.9" r="2.5" fill="#4472C4"/><circle cx="60.0" cy="5.3" r="2.5" fill="#4472C4"/></svg></td><td class="cnt">70</td><td class="cnt">76</td><td class="cnt">73</td><td class="cnt">83</td><td class="cnt avg"><b>75.5</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,15.7 20.0,10.4 40.0,13.0 60.0,4.3" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="15.7" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="10.4" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="13.0" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="4.3" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">8</td><td class="team">白沙2队</td><td class="rate green">97.1</td><td class="rate green">97.7</td><td class="rate green">96.5</td><td class="rate green">97.2</td><td class="rate avg green"><b>97.1</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,6.8 20.0,5.4 40.0,8.2 60.0,6.6" fill="none" stroke="#4472C4" stroke-width="2"/><circle cx="0.0" cy="6.8" r="2.5" fill="#4472C4"/><circle cx="20.0" cy="5.4" r="2.5" fill="#4472C4"/><circle cx="40.0" cy="8.2" r="2.5" fill="#4472C4"/><circle cx="60.0" cy="6.6" r="2.5" fill="#4472C4"/></svg></td><td class="cnt">88</td><td class="cnt">79</td><td class="cnt">84</td><td class="cnt">88</td><td class="cnt avg"><b>84.8</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,5.3 20.0,14.7 40.0,9.5 60.0,5.3" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="5.3" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="14.7" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="9.5" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="5.3" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">9</td><td class="team">港口1队</td><td class="rate green">95.1</td><td class="rate green">97.3</td><td class="rate green">98.0</td><td class="rate green">97.9</td><td class="rate avg green"><b>97.1</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,9.9 20.0,5.5 40.0,4.0 60.0,4.2" fill="none" stroke="#4472C4" stroke-width="2"/><circle cx="0.0" cy="9.9" r="2.5" fill="#4472C4"/><circle cx="20.0" cy="5.5" r="2.5" fill="#4472C4"/><circle cx="40.0" cy="4.0" r="2.5" fill="#4472C4"/><circle cx="60.0" cy="4.2" r="2.5" fill="#4472C4"/></svg></td><td class="cnt">58</td><td class="cnt">56</td><td class="cnt">58</td><td class="cnt">60</td><td class="cnt avg"><b>58.0</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,10.0 20.0,12.9 40.0,10.0 60.0,7.1" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="10.0" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="12.9" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="10.0" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="7.1" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">10</td><td class="team">港口3队</td><td class="rate green">98.1</td><td class="rate green">95.5</td><td class="rate green">97.4</td><td class="rate green">97.4</td><td class="rate avg green"><b>97.1</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,4.0 20.0,9.5 40.0,5.5 60.0,5.5" fill="none" stroke="#4472C4" stroke-width="2"/><circle cx="0.0" cy="4.0" r="2.5" fill="#4472C4"/><circle cx="20.0" cy="9.5" r="2.5" fill="#4472C4"/><circle cx="40.0" cy="5.5" r="2.5" fill="#4472C4"/><circle cx="60.0" cy="5.5" r="2.5" fill="#4472C4"/></svg></td><td class="cnt">43</td><td class="cnt">48</td><td class="cnt">48</td><td class="cnt">42</td><td class="cnt avg"><b>45.2</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,12.5 20.0,6.2 40.0,6.2 60.0,13.8" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="12.5" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="6.2" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="6.2" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="13.8" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">11</td><td class="team">江海1队</td><td class="rate green">96.0</td><td class="rate yellow">94.7</td><td class="rate green">97.5</td><td class="rate green">97.0</td><td class="rate avg green"><b>96.3</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,7.8 20.0,10.3 40.0,4.9 60.0,5.8" fill="none" stroke="#4472C4" stroke-width="2"/><circle cx="0.0" cy="7.8" r="2.5" fill="#4472C4"/><circle cx="20.0" cy="10.3" r="2.5" fill="#4472C4"/><circle cx="40.0" cy="4.9" r="2.5" fill="#4472C4"/><circle cx="60.0" cy="5.8" r="2.5" fill="#4472C4"/></svg></td><td class="cnt">71</td><td class="cnt">73</td><td class="cnt">61</td><td class="cnt">69</td><td class="cnt avg"><b>68.5</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,6.4 20.0,4.5 40.0,15.5 60.0,8.2" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="6.4" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="4.5" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="15.5" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="8.2" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">12</td><td class="team">江海3队</td><td class="rate green">97.7</td><td class="rate green">96.2</td><td class="rate green">96.0</td><td class="rate yellow">94.7</td><td class="rate avg green"><b>96.1</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,4.5 20.0,7.4 40.0,7.8 60.0,10.3" fill="none" stroke="#4472C4" stroke-width="2"/><circle cx="0.0" cy="4.5" r="2.5" fill="#4472C4"/><circle cx="20.0" cy="7.4" r="2.5" fill="#4472C4"/><circle cx="40.0" cy="7.8" r="2.5" fill="#4472C4"/><circle cx="60.0" cy="10.3" r="2.5" fill="#4472C4"/></svg></td><td class="cnt">83</td><td class="cnt">88</td><td class="cnt">89</td><td class="cnt">84</td><td class="cnt avg"><b>86.0</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,13.8 20.0,7.5 40.0,6.2 60.0,12.5" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="13.8" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="7.5" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="6.2" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="12.5" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">13</td><td class="team">新会4队</td><td class="rate green">96.8</td><td class="rate green">96.4</td><td class="rate yellow">93.9</td><td class="rate green">96.6</td><td class="rate avg green"><b>95.9</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,5.8 20.0,6.5 40.0,11.0 60.0,6.1" fill="none" stroke="#4472C4" stroke-width="2"/><circle cx="0.0" cy="5.8" r="2.5" fill="#4472C4"/><circle cx="20.0" cy="6.5" r="2.5" fill="#4472C4"/><circle cx="40.0" cy="11.0" r="2.5" fill="#4472C4"/><circle cx="60.0" cy="6.1" r="2.5" fill="#4472C4"/></svg></td><td class="cnt">80</td><td class="cnt">85</td><td class="cnt">87</td><td class="cnt">75</td><td class="cnt avg"><b>81.8</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,10.9 20.0,6.4 40.0,4.5 60.0,15.5" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="10.9" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="6.4" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="4.5" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="15.5" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">14</td><td class="team">地王1队</td><td class="rate green">95.0</td><td class="rate green">96.8</td><td class="rate yellow">94.9</td><td class="rate green">97.2</td><td class="rate avg green"><b>95.9</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,9.9 20.0,6.3 40.0,10.1 60.0,5.5" fill="none" stroke="#4472C4" stroke-width="2"/><circle cx="0.0" cy="9.9" r="2.5" fill="#4472C4"/><circle cx="20.0" cy="6.3" r="2.5" fill="#4472C4"/><circle cx="40.0" cy="10.1" r="2.5" fill="#4472C4"/><circle cx="60.0" cy="5.5" r="2.5" fill="#4472C4"/></svg></td><td class="cnt">69</td><td class="cnt">68</td><td class="cnt">64</td><td class="cnt">61</td><td class="cnt avg"><b>65.5</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,5.6 20.0,6.7 40.0,11.1 60.0,14.4" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="5.6" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="6.7" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="11.1" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="14.4" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">15</td><td class="team">江海4队</td><td class="rate green">95.9</td><td class="rate green">95.3</td><td class="rate green">95.8</td><td class="rate yellow">92.4</td><td class="rate avg yellow"><b>94.9</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,6.5 20.0,7.5 40.0,6.7 60.0,12.1" fill="none" stroke="#4472C4" stroke-width="2"/><circle cx="0.0" cy="6.5" r="2.5" fill="#4472C4"/><circle cx="20.0" cy="7.5" r="2.5" fill="#4472C4"/><circle cx="40.0" cy="6.7" r="2.5" fill="#4472C4"/><circle cx="60.0" cy="12.1" r="2.5" fill="#4472C4"/></svg></td><td class="cnt">66</td><td class="cnt">66</td><td class="cnt">62</td><td class="cnt">63</td><td class="cnt avg"><b>64.2</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,7.1 20.0,7.1 40.0,12.9 60.0,11.4" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="7.1" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="7.1" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="12.9" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="11.4" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">16</td><td class="team">天沙河三队</td><td class="rate yellow">94.4</td><td class="rate green">96.3</td><td class="rate yellow">94.2</td><td class="rate yellow">92.7</td><td class="rate avg yellow"><b>94.4</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,9.1 20.0,6.0 40.0,9.4 60.0,11.9" fill="none" stroke="#4472C4" stroke-width="2"/><circle cx="0.0" cy="9.1" r="2.5" fill="#4472C4"/><circle cx="20.0" cy="6.0" r="2.5" fill="#4472C4"/><circle cx="40.0" cy="9.4" r="2.5" fill="#4472C4"/><circle cx="60.0" cy="11.9" r="2.5" fill="#4472C4"/></svg></td><td class="cnt">61</td><td class="cnt">66</td><td class="cnt">67</td><td class="cnt">54</td><td class="cnt avg"><b>62.0</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,9.6 20.0,5.2 40.0,4.3 60.0,15.7" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="9.6" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="5.2" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="4.3" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="15.7" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">17</td><td class="team">地王2队</td><td class="rate yellow">93.3</td><td class="rate yellow">92.1</td><td class="rate yellow">94.8</td><td class="rate green">95.6</td><td class="rate avg yellow"><b>94.1</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,10.4 20.0,12.2 40.0,8.1 60.0,6.8" fill="none" stroke="#4472C4" stroke-width="2"/><circle cx="0.0" cy="10.4" r="2.5" fill="#4472C4"/><circle cx="20.0" cy="12.2" r="2.5" fill="#4472C4"/><circle cx="40.0" cy="8.1" r="2.5" fill="#4472C4"/><circle cx="60.0" cy="6.8" r="2.5" fill="#4472C4"/></svg></td><td class="cnt">29</td><td class="cnt">29</td><td class="cnt">36</td><td class="cnt">35</td><td class="cnt avg"><b>32.2</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,14.1 20.0,14.1 40.0,5.9 60.0,7.1" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="14.1" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="14.1" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="5.9" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="7.1" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">18</td><td class="team">新会2队</td><td class="rate yellow">94.2</td><td class="rate green">95.5</td><td class="rate red">89.4</td><td class="rate yellow">91.9</td><td class="rate avg yellow"><b>92.6</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,7.4 20.0,5.8 40.0,13.6 60.0,10.4" fill="none" stroke="#4472C4" stroke-width="2"/><circle cx="0.0" cy="7.4" r="2.5" fill="#4472C4"/><circle cx="20.0" cy="5.8" r="2.5" fill="#4472C4"/><circle cx="40.0" cy="13.6" r="2.5" fill="#4472C4"/><circle cx="60.0" cy="10.4" r="2.5" fill="#4472C4"/></svg></td><td class="cnt">63</td><td class="cnt">67</td><td class="cnt">68</td><td class="cnt">64</td><td class="cnt avg"><b>65.5</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,13.3 20.0,8.0 40.0,6.7 60.0,12.0" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="13.3" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="8.0" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="6.7" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="12.0" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">19</td><td class="team">白沙1队</td><td class="rate green">95.8</td><td class="rate yellow">92.0</td><td class="rate red">84.1</td><td class="rate green">97.3</td><td class="rate avg yellow"><b>92.2</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,4.0 20.0,7.7 40.0,15.2 60.0,2.6" fill="none" stroke="#4472C4" stroke-width="2"/><circle cx="0.0" cy="4.0" r="2.5" fill="#4472C4"/><circle cx="20.0" cy="7.7" r="2.5" fill="#4472C4"/><circle cx="40.0" cy="15.2" r="2.5" fill="#4472C4"/><circle cx="60.0" cy="2.6" r="2.5" fill="#4472C4"/></svg></td><td class="cnt">40</td><td class="cnt">35</td><td class="cnt">33</td><td class="cnt">30</td><td class="cnt avg"><b>34.5</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,5.0 20.0,10.0 40.0,12.0 60.0,15.0" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="5.0" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="10.0" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="12.0" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="15.0" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">20</td><td class="team">天沙河二队</td><td class="rate yellow">93.1</td><td class="rate yellow">93.5</td><td class="rate red">86.0</td><td class="rate yellow">91.3</td><td class="rate avg yellow"><b>91.0</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,6.2 20.0,5.7 40.0,14.3 60.0,8.2" fill="none" stroke="#4472C4" stroke-width="2"/><circle cx="0.0" cy="6.2" r="2.5" fill="#4472C4"/><circle cx="20.0" cy="5.7" r="2.5" fill="#4472C4"/><circle cx="40.0" cy="14.3" r="2.5" fill="#4472C4"/><circle cx="60.0" cy="8.2" r="2.5" fill="#4472C4"/></svg></td><td class="cnt">57</td><td class="cnt">55</td><td class="cnt">49</td><td class="cnt">45</td><td class="cnt avg"><b>51.5</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,4.5 20.0,6.4 40.0,11.8 60.0,15.5" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="4.5" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="6.4" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="11.8" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="15.5" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr class="total"><td></td><td><b>全市汇总</b></td><td class="rate"><b>96.5</b></td><td class="rate"><b>96.6</b></td><td class="rate"><b>95.5</b></td><td class="rate"><b>96.5</b></td><td class="rate avg"><b>96.3</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,7.4 20.0,7.2 40.0,9.5 60.0,7.4" fill="none" stroke="#4472C4" stroke-width="2"/><circle cx="0.0" cy="7.4" r="2.5" fill="#4472C4"/><circle cx="20.0" cy="7.2" r="2.5" fill="#4472C4"/><circle cx="40.0" cy="9.5" r="2.5" fill="#4472C4"/><circle cx="60.0" cy="7.4" r="2.5" fill="#4472C4"/></svg></td><td class="cnt"><b>1412</b></td><td class="cnt"><b>1413</b></td><td class="cnt"><b>1388</b></td><td class="cnt"><b>1361</b></td><td class="cnt avg"><b>1393.5</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,1.9 20.0,1.6 40.0,9.7 60.0,18.4" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="1.9" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="1.6" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="9.7" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="18.4" r="2.5" fill="#ED7D31"/></svg></td></tr></tbody></table></div>
+
+<div class="section">
+    <h2 style="border-left:4px solid #2E75B6;padding-left:12px">乐跑</h2>
+    <div class="summary-cards">
+        <div class="card"><div class="card-label">4周平均吻合率</div><div class="card-value green">98.3%</div></div>
+        <div class="card"><div class="card-label">4周平均人数</div><div class="card-value">899.0</div></div>
+        <div class="card"><div class="card-label">趋势</div><div class="card-value"><svg width="100" height="30" viewBox="0 0 100 30"><polyline points="0.0,8.3 33.3,7.0 66.7,7.4 100.0,7.0" fill="none" stroke="#2E75B6" stroke-width="2"/><circle cx="0.0" cy="8.3" r="2.5" fill="#2E75B6"/><circle cx="33.3" cy="7.0" r="2.5" fill="#2E75B6"/><circle cx="66.7" cy="7.4" r="2.5" fill="#2E75B6"/><circle cx="100.0" cy="7.0" r="2.5" fill="#2E75B6"/></svg></div></div>
+    </div>
+    <table>
+    <thead><tr>
+        <th>排名</th><th>小队</th>
+        <th>5/4-5/10</th><th>5/11-5/17</th><th>5/18-5/24</th><th>5/25-5/31</th>
+        <th>4周平均</th><th>趋势</th>
+        <th>5/4-5/10</th><th>5/11-5/17</th><th>5/18-5/24</th><th>5/25-5/31</th>
+        <th>平均</th><th>趋势</th>
+    </tr>
+    <tr class="sub-header">
+        <th colspan="2"></th>
+        <th colspan="6" style="background:#2E75B620;color:#2E75B6">吻合率</th>
+        <th colspan="6" style="background:#ED7D3120;color:#ED7D31">人数规模</th>
+    </tr>
+    </thead><tbody>
+<tr><td class="rank">1</td><td class="team">开平2队</td><td class="rate green">100.0</td><td class="rate green">100.0</td><td class="rate green">98.8</td><td class="rate green">100.0</td><td class="rate avg green"><b>99.7</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,0.0 20.0,0.0 40.0,3.9 60.0,0.0" fill="none" stroke="#2E75B6" stroke-width="2"/><circle cx="0.0" cy="0.0" r="2.5" fill="#2E75B6"/><circle cx="20.0" cy="0.0" r="2.5" fill="#2E75B6"/><circle cx="40.0" cy="3.9" r="2.5" fill="#2E75B6"/><circle cx="60.0" cy="0.0" r="2.5" fill="#2E75B6"/></svg></td><td class="cnt">46</td><td class="cnt">45</td><td class="cnt">44</td><td class="cnt">43</td><td class="cnt avg"><b>44.5</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,7.7 20.0,9.2 40.0,10.8 60.0,12.3" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="7.7" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="9.2" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="10.8" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="12.3" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">2</td><td class="team">港口2队</td><td class="rate green">99.0</td><td class="rate green">98.6</td><td class="rate green">98.5</td><td class="rate green">98.8</td><td class="rate avg green"><b>98.7</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,3.1 20.0,4.3 40.0,4.6 60.0,3.7" fill="none" stroke="#2E75B6" stroke-width="2"/><circle cx="0.0" cy="3.1" r="2.5" fill="#2E75B6"/><circle cx="20.0" cy="4.3" r="2.5" fill="#2E75B6"/><circle cx="40.0" cy="4.6" r="2.5" fill="#2E75B6"/><circle cx="60.0" cy="3.7" r="2.5" fill="#2E75B6"/></svg></td><td class="cnt">57</td><td class="cnt">56</td><td class="cnt">57</td><td class="cnt">54</td><td class="cnt avg"><b>56.0</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,7.7 20.0,9.2 40.0,7.7 60.0,12.3" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="7.7" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="9.2" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="7.7" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="12.3" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">3</td><td class="team">北新区三队</td><td class="rate green">98.7</td><td class="rate green">99.0</td><td class="rate green">98.2</td><td class="rate green">99.6</td><td class="rate avg green"><b>98.9</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,3.8 20.0,2.9 40.0,5.3 60.0,1.2" fill="none" stroke="#2E75B6" stroke-width="2"/><circle cx="0.0" cy="3.8" r="2.5" fill="#2E75B6"/><circle cx="20.0" cy="2.9" r="2.5" fill="#2E75B6"/><circle cx="40.0" cy="5.3" r="2.5" fill="#2E75B6"/><circle cx="60.0" cy="1.2" r="2.5" fill="#2E75B6"/></svg></td><td class="cnt">72</td><td class="cnt">66</td><td class="cnt">64</td><td class="cnt">65</td><td class="cnt avg"><b>66.8</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,5.6 20.0,12.2 40.0,14.4 60.0,13.3" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="5.6" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="12.2" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="14.4" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="13.3" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">4</td><td class="team">北新区1队</td><td class="rate green">98.8</td><td class="rate green">98.8</td><td class="rate green">98.5</td><td class="rate green">98.8</td><td class="rate avg green"><b>98.7</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,3.7 20.0,3.7 40.0,4.6 60.0,3.7" fill="none" stroke="#2E75B6" stroke-width="2"/><circle cx="0.0" cy="3.7" r="2.5" fill="#2E75B6"/><circle cx="20.0" cy="3.7" r="2.5" fill="#2E75B6"/><circle cx="40.0" cy="4.6" r="2.5" fill="#2E75B6"/><circle cx="60.0" cy="3.7" r="2.5" fill="#2E75B6"/></svg></td><td class="cnt">66</td><td class="cnt">67</td><td class="cnt">65</td><td class="cnt">65</td><td class="cnt avg"><b>65.8</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,10.0 20.0,8.3 40.0,11.7 60.0,11.7" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="10.0" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="8.3" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="11.7" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="11.7" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">5</td><td class="team">江海2队</td><td class="rate green">98.0</td><td class="rate green">98.7</td><td class="rate green">99.5</td><td class="rate green">99.2</td><td class="rate avg green"><b>98.8</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,5.7 20.0,3.7 40.0,1.4 60.0,2.3" fill="none" stroke="#2E75B6" stroke-width="2"/><circle cx="0.0" cy="5.7" r="2.5" fill="#2E75B6"/><circle cx="20.0" cy="3.7" r="2.5" fill="#2E75B6"/><circle cx="40.0" cy="1.4" r="2.5" fill="#2E75B6"/><circle cx="60.0" cy="2.3" r="2.5" fill="#2E75B6"/></svg></td><td class="cnt">76</td><td class="cnt">68</td><td class="cnt">66</td><td class="cnt">57</td><td class="cnt avg"><b>66.8</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,3.4 20.0,9.0 40.0,10.3 60.0,16.6" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="3.4" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="9.0" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="10.3" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="16.6" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">6</td><td class="team">新会3队</td><td class="rate green">99.5</td><td class="rate green">99.2</td><td class="rate green">98.1</td><td class="rate green">99.8</td><td class="rate avg green"><b>99.1</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,1.4 20.0,2.3 40.0,5.5 60.0,0.6" fill="none" stroke="#2E75B6" stroke-width="2"/><circle cx="0.0" cy="1.4" r="2.5" fill="#2E75B6"/><circle cx="20.0" cy="2.3" r="2.5" fill="#2E75B6"/><circle cx="40.0" cy="5.5" r="2.5" fill="#2E75B6"/><circle cx="60.0" cy="0.6" r="2.5" fill="#2E75B6"/></svg></td><td class="cnt">45</td><td class="cnt">44</td><td class="cnt">44</td><td class="cnt">47</td><td class="cnt avg"><b>45.0</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,10.8 20.0,12.3 40.0,12.3 60.0,7.7" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="10.8" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="12.3" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="12.3" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="7.7" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">7</td><td class="team">新会1队</td><td class="rate green">95.2</td><td class="rate green">99.2</td><td class="rate green">99.4</td><td class="rate green">99.4</td><td class="rate avg green"><b>98.3</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,9.8 20.0,1.6 40.0,1.2 60.0,1.2" fill="none" stroke="#2E75B6" stroke-width="2"/><circle cx="0.0" cy="9.8" r="2.5" fill="#2E75B6"/><circle cx="20.0" cy="1.6" r="2.5" fill="#2E75B6"/><circle cx="40.0" cy="1.2" r="2.5" fill="#2E75B6"/><circle cx="60.0" cy="1.2" r="2.5" fill="#2E75B6"/></svg></td><td class="cnt">44</td><td class="cnt">42</td><td class="cnt">41</td><td class="cnt">44</td><td class="cnt avg"><b>42.8</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,7.7 20.0,10.8 40.0,12.3 60.0,7.7" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="7.7" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="10.8" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="12.3" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="7.7" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">8</td><td class="team">白沙2队</td><td class="rate green">98.8</td><td class="rate green">99.1</td><td class="rate green">98.7</td><td class="rate green">99.1</td><td class="rate avg green"><b>99.0</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,3.8 20.0,2.9 40.0,4.1 60.0,2.9" fill="none" stroke="#2E75B6" stroke-width="2"/><circle cx="0.0" cy="3.8" r="2.5" fill="#2E75B6"/><circle cx="20.0" cy="2.9" r="2.5" fill="#2E75B6"/><circle cx="40.0" cy="4.1" r="2.5" fill="#2E75B6"/><circle cx="60.0" cy="2.9" r="2.5" fill="#2E75B6"/></svg></td><td class="cnt">57</td><td class="cnt">46</td><td class="cnt">55</td><td class="cnt">55</td><td class="cnt avg"><b>53.2</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,4.8 20.0,15.2 40.0,6.7 60.0,6.7" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="4.8" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="15.2" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="6.7" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="6.7" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">9</td><td class="team">港口1队</td><td class="rate green">96.8</td><td class="rate green">99.9</td><td class="rate green">99.7</td><td class="rate green">98.2</td><td class="rate avg green"><b>98.6</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,7.8 20.0,0.2 40.0,0.7 60.0,4.4" fill="none" stroke="#2E75B6" stroke-width="2"/><circle cx="0.0" cy="7.8" r="2.5" fill="#2E75B6"/><circle cx="20.0" cy="0.2" r="2.5" fill="#2E75B6"/><circle cx="40.0" cy="0.7" r="2.5" fill="#2E75B6"/><circle cx="60.0" cy="4.4" r="2.5" fill="#2E75B6"/></svg></td><td class="cnt">36</td><td class="cnt">31</td><td class="cnt">34</td><td class="cnt">40</td><td class="cnt avg"><b>35.2</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,9.5 20.0,14.7 40.0,11.6 60.0,5.3" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="9.5" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="14.7" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="11.6" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="5.3" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">10</td><td class="team">港口3队</td><td class="rate green">99.8</td><td class="rate green">97.8</td><td class="rate green">99.4</td><td class="rate green">98.8</td><td class="rate avg green"><b>98.9</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,0.6 20.0,6.1 40.0,1.7 60.0,3.3" fill="none" stroke="#2E75B6" stroke-width="2"/><circle cx="0.0" cy="0.6" r="2.5" fill="#2E75B6"/><circle cx="20.0" cy="6.1" r="2.5" fill="#2E75B6"/><circle cx="40.0" cy="1.7" r="2.5" fill="#2E75B6"/><circle cx="60.0" cy="3.3" r="2.5" fill="#2E75B6"/></svg></td><td class="cnt">32</td><td class="cnt">33</td><td class="cnt">33</td><td class="cnt">30</td><td class="cnt avg"><b>32.0</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,9.2 20.0,7.7 40.0,7.7 60.0,12.3" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="9.2" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="7.7" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="7.7" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="12.3" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">11</td><td class="team">江海1队</td><td class="rate green">97.9</td><td class="rate green">98.5</td><td class="rate green">98.4</td><td class="rate green">98.6</td><td class="rate avg green"><b>98.3</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,5.9 20.0,4.2 40.0,4.5 60.0,3.9" fill="none" stroke="#2E75B6" stroke-width="2"/><circle cx="0.0" cy="5.9" r="2.5" fill="#2E75B6"/><circle cx="20.0" cy="4.2" r="2.5" fill="#2E75B6"/><circle cx="40.0" cy="4.5" r="2.5" fill="#2E75B6"/><circle cx="60.0" cy="3.9" r="2.5" fill="#2E75B6"/></svg></td><td class="cnt">52</td><td class="cnt">50</td><td class="cnt">49</td><td class="cnt">48</td><td class="cnt avg"><b>49.8</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,7.1 20.0,10.0 40.0,11.4 60.0,12.9" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="7.1" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="10.0" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="11.4" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="12.9" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">12</td><td class="team">江海3队</td><td class="rate green">98.6</td><td class="rate green">97.7</td><td class="rate green">98.4</td><td class="rate green">96.9</td><td class="rate avg green"><b>97.9</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,3.5 20.0,5.7 40.0,4.0 60.0,7.7" fill="none" stroke="#2E75B6" stroke-width="2"/><circle cx="0.0" cy="3.5" r="2.5" fill="#2E75B6"/><circle cx="20.0" cy="5.7" r="2.5" fill="#2E75B6"/><circle cx="40.0" cy="4.0" r="2.5" fill="#2E75B6"/><circle cx="60.0" cy="7.7" r="2.5" fill="#2E75B6"/></svg></td><td class="cnt">56</td><td class="cnt">57</td><td class="cnt">59</td><td class="cnt">50</td><td class="cnt avg"><b>55.5</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,8.4 20.0,7.4 40.0,5.3 60.0,14.7" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="8.4" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="7.4" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="5.3" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="14.7" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">13</td><td class="team">新会4队</td><td class="rate green">99.6</td><td class="rate green">99.6</td><td class="rate green">99.1</td><td class="rate green">97.7</td><td class="rate avg green"><b>99.0</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,1.1 20.0,1.1 40.0,2.5 60.0,6.3" fill="none" stroke="#2E75B6" stroke-width="2"/><circle cx="0.0" cy="1.1" r="2.5" fill="#2E75B6"/><circle cx="20.0" cy="1.1" r="2.5" fill="#2E75B6"/><circle cx="40.0" cy="2.5" r="2.5" fill="#2E75B6"/><circle cx="60.0" cy="6.3" r="2.5" fill="#2E75B6"/></svg></td><td class="cnt">52</td><td class="cnt">53</td><td class="cnt">55</td><td class="cnt">50</td><td class="cnt avg"><b>52.5</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,10.7 20.0,9.3 40.0,6.7 60.0,13.3" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="10.7" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="9.3" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="6.7" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="13.3" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">14</td><td class="team">地王1队</td><td class="rate green">97.1</td><td class="rate green">99.9</td><td class="rate green">97.2</td><td class="rate green">99.7</td><td class="rate avg green"><b>98.4</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,7.3 20.0,0.3 40.0,7.1 60.0,0.8" fill="none" stroke="#2E75B6" stroke-width="2"/><circle cx="0.0" cy="7.3" r="2.5" fill="#2E75B6"/><circle cx="20.0" cy="0.3" r="2.5" fill="#2E75B6"/><circle cx="40.0" cy="7.1" r="2.5" fill="#2E75B6"/><circle cx="60.0" cy="0.8" r="2.5" fill="#2E75B6"/></svg></td><td class="cnt">41</td><td class="cnt">33</td><td class="cnt">33</td><td class="cnt">31</td><td class="cnt avg"><b>34.5</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,5.0 20.0,13.0 40.0,13.0 60.0,15.0" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="5.0" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="13.0" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="13.0" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="15.0" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">15</td><td class="team">江海4队</td><td class="rate green">97.4</td><td class="rate yellow">94.6</td><td class="rate green">98.5</td><td class="rate green">95.8</td><td class="rate avg green"><b>96.6</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,5.0 20.0,10.4 40.0,2.9 60.0,8.1" fill="none" stroke="#2E75B6" stroke-width="2"/><circle cx="0.0" cy="5.0" r="2.5" fill="#2E75B6"/><circle cx="20.0" cy="10.4" r="2.5" fill="#2E75B6"/><circle cx="40.0" cy="2.9" r="2.5" fill="#2E75B6"/><circle cx="60.0" cy="8.1" r="2.5" fill="#2E75B6"/></svg></td><td class="cnt">49</td><td class="cnt">46</td><td class="cnt">42</td><td class="cnt">40</td><td class="cnt avg"><b>44.2</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,5.3 20.0,8.4 40.0,12.6 60.0,14.7" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="5.3" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="8.4" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="12.6" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="14.7" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">16</td><td class="team">天沙河三队</td><td class="rate green">97.4</td><td class="rate green">97.3</td><td class="rate green">99.2</td><td class="rate yellow">94.9</td><td class="rate avg green"><b>97.3</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,5.1 20.0,5.3 40.0,1.6 60.0,10.1" fill="none" stroke="#2E75B6" stroke-width="2"/><circle cx="0.0" cy="5.1" r="2.5" fill="#2E75B6"/><circle cx="20.0" cy="5.3" r="2.5" fill="#2E75B6"/><circle cx="40.0" cy="1.6" r="2.5" fill="#2E75B6"/><circle cx="60.0" cy="10.1" r="2.5" fill="#2E75B6"/></svg></td><td class="cnt">45</td><td class="cnt">46</td><td class="cnt">44</td><td class="cnt">37</td><td class="cnt avg"><b>43.0</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,6.3 20.0,5.3 40.0,7.4 60.0,14.7" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="6.3" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="5.3" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="7.4" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="14.7" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">17</td><td class="team">地王2队</td><td class="rate yellow">94.4</td><td class="rate green">98.8</td><td class="rate green">97.3</td><td class="rate green">97.8</td><td class="rate avg green"><b>97.1</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,10.6 20.0,2.3 40.0,5.1 60.0,4.2" fill="none" stroke="#2E75B6" stroke-width="2"/><circle cx="0.0" cy="10.6" r="2.5" fill="#2E75B6"/><circle cx="20.0" cy="2.3" r="2.5" fill="#2E75B6"/><circle cx="40.0" cy="5.1" r="2.5" fill="#2E75B6"/><circle cx="60.0" cy="4.2" r="2.5" fill="#2E75B6"/></svg></td><td class="cnt">18</td><td class="cnt">17</td><td class="cnt">22</td><td class="cnt">20</td><td class="cnt avg"><b>19.2</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,12.0 20.0,13.3 40.0,6.7 60.0,9.3" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="12.0" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="13.3" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="6.7" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="9.3" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">18</td><td class="team">新会2队</td><td class="rate green">97.1</td><td class="rate green">99.1</td><td class="rate green">97.6</td><td class="rate green">98.3</td><td class="rate avg green"><b>98.0</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,7.3 20.0,2.3 40.0,6.1 60.0,4.3" fill="none" stroke="#2E75B6" stroke-width="2"/><circle cx="0.0" cy="7.3" r="2.5" fill="#2E75B6"/><circle cx="20.0" cy="2.3" r="2.5" fill="#2E75B6"/><circle cx="40.0" cy="6.1" r="2.5" fill="#2E75B6"/><circle cx="60.0" cy="4.3" r="2.5" fill="#2E75B6"/></svg></td><td class="cnt">34</td><td class="cnt">35</td><td class="cnt">35</td><td class="cnt">32</td><td class="cnt avg"><b>34.0</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,9.2 20.0,7.7 40.0,7.7 60.0,12.3" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="9.2" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="7.7" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="7.7" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="12.3" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">19</td><td class="team">白沙1队</td><td class="rate green">99.2</td><td class="rate yellow">94.8</td><td class="rate green">96.6</td><td class="rate green">99.5</td><td class="rate avg green"><b>97.6</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,1.6 20.0,10.2 40.0,6.7 60.0,1.0" fill="none" stroke="#2E75B6" stroke-width="2"/><circle cx="0.0" cy="1.6" r="2.5" fill="#2E75B6"/><circle cx="20.0" cy="10.2" r="2.5" fill="#2E75B6"/><circle cx="40.0" cy="6.7" r="2.5" fill="#2E75B6"/><circle cx="60.0" cy="1.0" r="2.5" fill="#2E75B6"/></svg></td><td class="cnt">28</td><td class="cnt">24</td><td class="cnt">24</td><td class="cnt">25</td><td class="cnt avg"><b>25.2</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,7.1 20.0,12.9 40.0,12.9 60.0,11.4" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="7.1" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="12.9" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="12.9" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="11.4" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">20</td><td class="team">天沙河二队</td><td class="rate yellow">93.9</td><td class="rate yellow">94.4</td><td class="rate yellow">91.9</td><td class="rate yellow">93.4</td><td class="rate avg yellow"><b>93.4</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,8.8 20.0,8.0 40.0,12.0 60.0,9.6" fill="none" stroke="#2E75B6" stroke-width="2"/><circle cx="0.0" cy="8.8" r="2.5" fill="#2E75B6"/><circle cx="20.0" cy="8.0" r="2.5" fill="#2E75B6"/><circle cx="40.0" cy="12.0" r="2.5" fill="#2E75B6"/><circle cx="60.0" cy="9.6" r="2.5" fill="#2E75B6"/></svg></td><td class="cnt">39</td><td class="cnt">33</td><td class="cnt">33</td><td class="cnt">27</td><td class="cnt avg"><b>33.0</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,4.5 20.0,10.0 40.0,10.0 60.0,15.5" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="4.5" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="10.0" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="10.0" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="15.5" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr class="total"><td></td><td><b>全市汇总</b></td><td class="rate"><b>98.1</b></td><td class="rate"><b>98.4</b></td><td class="rate"><b>98.3</b></td><td class="rate"><b>98.4</b></td><td class="rate avg"><b>98.3</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,5.5 20.0,4.6 40.0,4.9 60.0,4.6" fill="none" stroke="#2E75B6" stroke-width="2"/><circle cx="0.0" cy="5.5" r="2.5" fill="#2E75B6"/><circle cx="20.0" cy="4.6" r="2.5" fill="#2E75B6"/><circle cx="40.0" cy="4.9" r="2.5" fill="#2E75B6"/><circle cx="60.0" cy="4.6" r="2.5" fill="#2E75B6"/></svg></td><td class="cnt"><b>945</b></td><td class="cnt"><b>892</b></td><td class="cnt"><b>899</b></td><td class="cnt"><b>860</b></td><td class="cnt avg"><b>899.0</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,1.1 20.0,12.2 40.0,10.7 60.0,18.9" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="1.1" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="12.2" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="10.7" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="18.9" r="2.5" fill="#ED7D31"/></svg></td></tr></tbody></table></div>
+
+<div class="section">
+    <h2 style="border-left:4px solid #548235;padding-left:12px">畅跑</h2>
+    <div class="summary-cards">
+        <div class="card"><div class="card-label">4周平均吻合率</div><div class="card-value yellow">91.9%</div></div>
+        <div class="card"><div class="card-label">4周平均人数</div><div class="card-value">494.5</div></div>
+        <div class="card"><div class="card-label">趋势</div><div class="card-value"><svg width="100" height="30" viewBox="0 0 100 30"><polyline points="0.0,12.7 33.3,11.8 66.7,18.5 100.0,11.5" fill="none" stroke="#548235" stroke-width="2"/><circle cx="0.0" cy="12.7" r="2.5" fill="#548235"/><circle cx="33.3" cy="11.8" r="2.5" fill="#548235"/><circle cx="66.7" cy="18.5" r="2.5" fill="#548235"/><circle cx="100.0" cy="11.5" r="2.5" fill="#548235"/></svg></div></div>
+    </div>
+    <table>
+    <thead><tr>
+        <th>排名</th><th>小队</th>
+        <th>5/4-5/10</th><th>5/11-5/17</th><th>5/18-5/24</th><th>5/25-5/31</th>
+        <th>4周平均</th><th>趋势</th>
+        <th>5/4-5/10</th><th>5/11-5/17</th><th>5/18-5/24</th><th>5/25-5/31</th>
+        <th>平均</th><th>趋势</th>
+    </tr>
+    <tr class="sub-header">
+        <th colspan="2"></th>
+        <th colspan="6" style="background:#54823520;color:#548235">吻合率</th>
+        <th colspan="6" style="background:#ED7D3120;color:#ED7D31">人数规模</th>
+    </tr>
+    </thead><tbody>
+<tr><td class="rank">1</td><td class="team">开平2队</td><td class="rate yellow">94.7</td><td class="rate green">96.1</td><td class="rate yellow">93.2</td><td class="rate green">96.2</td><td class="rate avg yellow"><b>94.9</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,9.0 20.0,6.6 40.0,11.5 60.0,6.4" fill="none" stroke="#548235" stroke-width="2"/><circle cx="0.0" cy="9.0" r="2.5" fill="#548235"/><circle cx="20.0" cy="6.6" r="2.5" fill="#548235"/><circle cx="40.0" cy="11.5" r="2.5" fill="#548235"/><circle cx="60.0" cy="6.4" r="2.5" fill="#548235"/></svg></td><td class="cnt">31</td><td class="cnt">25</td><td class="cnt">22</td><td class="cnt">21</td><td class="cnt avg"><b>24.8</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,5.0 20.0,11.0 40.0,14.0 60.0,15.0" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="5.0" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="11.0" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="14.0" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="15.0" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">2</td><td class="team">港口2队</td><td class="rate yellow">94.8</td><td class="rate green">95.1</td><td class="rate yellow">94.6</td><td class="rate green">96.8</td><td class="rate avg green"><b>95.3</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,10.0 20.0,9.4 40.0,10.4 60.0,6.2" fill="none" stroke="#548235" stroke-width="2"/><circle cx="0.0" cy="10.0" r="2.5" fill="#548235"/><circle cx="20.0" cy="9.4" r="2.5" fill="#548235"/><circle cx="40.0" cy="10.4" r="2.5" fill="#548235"/><circle cx="60.0" cy="6.2" r="2.5" fill="#548235"/></svg></td><td class="cnt">19</td><td class="cnt">21</td><td class="cnt">17</td><td class="cnt">19</td><td class="cnt avg"><b>19.0</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,10.0 20.0,7.1 40.0,12.9 60.0,10.0" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="10.0" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="7.1" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="12.9" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="10.0" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">3</td><td class="team">北新区三队</td><td class="rate green">96.1</td><td class="rate yellow">93.6</td><td class="rate green">96.8</td><td class="rate yellow">94.2</td><td class="rate avg green"><b>95.2</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,6.8 20.0,11.2 40.0,5.6 60.0,10.2" fill="none" stroke="#548235" stroke-width="2"/><circle cx="0.0" cy="6.8" r="2.5" fill="#548235"/><circle cx="20.0" cy="11.2" r="2.5" fill="#548235"/><circle cx="40.0" cy="5.6" r="2.5" fill="#548235"/><circle cx="60.0" cy="10.2" r="2.5" fill="#548235"/></svg></td><td class="cnt">32</td><td class="cnt">32</td><td class="cnt">31</td><td class="cnt">31</td><td class="cnt avg"><b>31.5</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,9.1 20.0,9.1 40.0,10.9 60.0,10.9" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="9.1" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="9.1" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="10.9" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="10.9" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">4</td><td class="team">北新区1队</td><td class="rate yellow">92.9</td><td class="rate green">95.5</td><td class="rate yellow">90.6</td><td class="rate green">98.8</td><td class="rate avg yellow"><b>94.4</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,9.9 20.0,6.2 40.0,13.1 60.0,1.7" fill="none" stroke="#548235" stroke-width="2"/><circle cx="0.0" cy="9.9" r="2.5" fill="#548235"/><circle cx="20.0" cy="6.2" r="2.5" fill="#548235"/><circle cx="40.0" cy="13.1" r="2.5" fill="#548235"/><circle cx="60.0" cy="1.7" r="2.5" fill="#548235"/></svg></td><td class="cnt">25</td><td class="cnt">29</td><td class="cnt">32</td><td class="cnt">32</td><td class="cnt avg"><b>29.5</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,14.1 20.0,9.4 40.0,5.9 60.0,5.9" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="14.1" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="9.4" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="5.9" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="5.9" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">5</td><td class="team">江海2队</td><td class="rate yellow">93.8</td><td class="rate green">96.0</td><td class="rate yellow">92.6</td><td class="rate green">95.7</td><td class="rate avg yellow"><b>94.5</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,10.0 20.0,6.5 40.0,11.9 60.0,6.9" fill="none" stroke="#548235" stroke-width="2"/><circle cx="0.0" cy="10.0" r="2.5" fill="#548235"/><circle cx="20.0" cy="6.5" r="2.5" fill="#548235"/><circle cx="40.0" cy="11.9" r="2.5" fill="#548235"/><circle cx="60.0" cy="6.9" r="2.5" fill="#548235"/></svg></td><td class="cnt">31</td><td class="cnt">33</td><td class="cnt">34</td><td class="cnt">41</td><td class="cnt avg"><b>34.8</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,15.0 20.0,13.0 40.0,12.0 60.0,5.0" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="15.0" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="13.0" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="12.0" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="5.0" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">6</td><td class="team">新会3队</td><td class="rate yellow">94.9</td><td class="rate yellow">94.0</td><td class="rate green">96.3</td><td class="rate yellow">92.5</td><td class="rate avg yellow"><b>94.5</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,8.2 20.0,9.6 40.0,5.9 60.0,12.0" fill="none" stroke="#548235" stroke-width="2"/><circle cx="0.0" cy="8.2" r="2.5" fill="#548235"/><circle cx="20.0" cy="9.6" r="2.5" fill="#548235"/><circle cx="40.0" cy="5.9" r="2.5" fill="#548235"/><circle cx="60.0" cy="12.0" r="2.5" fill="#548235"/></svg></td><td class="cnt">34</td><td class="cnt">36</td><td class="cnt">33</td><td class="cnt">33</td><td class="cnt avg"><b>34.0</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,10.8 20.0,7.7 40.0,12.3 60.0,12.3" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="10.8" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="7.7" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="12.3" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="12.3" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">7</td><td class="team">新会1队</td><td class="rate green">96.5</td><td class="rate green">95.6</td><td class="rate green">95.4</td><td class="rate green">95.2</td><td class="rate avg green"><b>95.6</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,7.1 20.0,9.0 40.0,9.4 60.0,9.8" fill="none" stroke="#548235" stroke-width="2"/><circle cx="0.0" cy="7.1" r="2.5" fill="#548235"/><circle cx="20.0" cy="9.0" r="2.5" fill="#548235"/><circle cx="40.0" cy="9.4" r="2.5" fill="#548235"/><circle cx="60.0" cy="9.8" r="2.5" fill="#548235"/></svg></td><td class="cnt">26</td><td class="cnt">34</td><td class="cnt">32</td><td class="cnt">39</td><td class="cnt avg"><b>32.8</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,15.7 20.0,8.7 40.0,10.4 60.0,4.3" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="15.7" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="8.7" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="10.4" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="4.3" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">8</td><td class="team">白沙2队</td><td class="rate yellow">93.0</td><td class="rate green">95.2</td><td class="rate yellow">92.1</td><td class="rate yellow">93.5</td><td class="rate avg yellow"><b>93.4</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,10.9 20.0,7.4 40.0,12.2 60.0,10.1" fill="none" stroke="#548235" stroke-width="2"/><circle cx="0.0" cy="10.9" r="2.5" fill="#548235"/><circle cx="20.0" cy="7.4" r="2.5" fill="#548235"/><circle cx="40.0" cy="12.2" r="2.5" fill="#548235"/><circle cx="60.0" cy="10.1" r="2.5" fill="#548235"/></svg></td><td class="cnt">31</td><td class="cnt">33</td><td class="cnt">29</td><td class="cnt">33</td><td class="cnt avg"><b>31.5</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,10.0 20.0,7.1 40.0,12.9 60.0,7.1" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="10.0" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="7.1" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="12.9" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="7.1" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">9</td><td class="team">港口1队</td><td class="rate yellow">91.3</td><td class="rate yellow">93.2</td><td class="rate green">95.3</td><td class="rate green">97.3</td><td class="rate avg yellow"><b>94.3</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,12.7 20.0,9.9 40.0,6.9 60.0,3.9" fill="none" stroke="#548235" stroke-width="2"/><circle cx="0.0" cy="12.7" r="2.5" fill="#548235"/><circle cx="20.0" cy="9.9" r="2.5" fill="#548235"/><circle cx="40.0" cy="6.9" r="2.5" fill="#548235"/><circle cx="60.0" cy="3.9" r="2.5" fill="#548235"/></svg></td><td class="cnt">22</td><td class="cnt">25</td><td class="cnt">24</td><td class="cnt">20</td><td class="cnt avg"><b>22.8</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,10.7 20.0,6.7 40.0,8.0 60.0,13.3" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="10.7" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="6.7" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="8.0" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="13.3" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">10</td><td class="team">港口3队</td><td class="rate yellow">91.5</td><td class="rate red">88.9</td><td class="rate yellow">92.5</td><td class="rate yellow">93.3</td><td class="rate avg yellow"><b>91.6</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,9.4 20.0,13.1 40.0,8.1 60.0,6.9" fill="none" stroke="#548235" stroke-width="2"/><circle cx="0.0" cy="9.4" r="2.5" fill="#548235"/><circle cx="20.0" cy="13.1" r="2.5" fill="#548235"/><circle cx="40.0" cy="8.1" r="2.5" fill="#548235"/><circle cx="60.0" cy="6.9" r="2.5" fill="#548235"/></svg></td><td class="cnt">11</td><td class="cnt">15</td><td class="cnt">15</td><td class="cnt">12</td><td class="cnt avg"><b>13.2</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,12.9 20.0,7.1 40.0,7.1 60.0,11.4" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="12.9" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="7.1" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="7.1" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="11.4" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">11</td><td class="team">江海1队</td><td class="rate red">89.2</td><td class="rate red">84.5</td><td class="rate yellow">93.6</td><td class="rate yellow">92.5</td><td class="rate avg red"><b>89.5</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,9.8 20.0,14.8 40.0,5.2 60.0,6.4" fill="none" stroke="#548235" stroke-width="2"/><circle cx="0.0" cy="9.8" r="2.5" fill="#548235"/><circle cx="20.0" cy="14.8" r="2.5" fill="#548235"/><circle cx="40.0" cy="5.2" r="2.5" fill="#548235"/><circle cx="60.0" cy="6.4" r="2.5" fill="#548235"/></svg></td><td class="cnt">19</td><td class="cnt">23</td><td class="cnt">12</td><td class="cnt">21</td><td class="cnt avg"><b>18.8</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,8.6 20.0,4.8 40.0,15.2 60.0,6.7" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="8.6" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="4.8" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="15.2" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="6.7" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">12</td><td class="team">江海3队</td><td class="rate green">95.2</td><td class="rate yellow">92.8</td><td class="rate yellow">91.0</td><td class="rate yellow">90.9</td><td class="rate avg yellow"><b>92.3</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,6.8 20.0,10.2 40.0,12.8 60.0,12.9" fill="none" stroke="#548235" stroke-width="2"/><circle cx="0.0" cy="6.8" r="2.5" fill="#548235"/><circle cx="20.0" cy="10.2" r="2.5" fill="#548235"/><circle cx="40.0" cy="12.8" r="2.5" fill="#548235"/><circle cx="60.0" cy="12.9" r="2.5" fill="#548235"/></svg></td><td class="cnt">27</td><td class="cnt">31</td><td class="cnt">30</td><td class="cnt">34</td><td class="cnt avg"><b>30.5</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,14.1 20.0,9.4 40.0,10.6 60.0,5.9" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="14.1" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="9.4" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="10.6" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="5.9" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">13</td><td class="team">新会4队</td><td class="rate yellow">90.3</td><td class="rate yellow">90.2</td><td class="rate red">84.9</td><td class="rate yellow">94.3</td><td class="rate avg red"><b>89.5</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,9.3 20.0,9.4 40.0,14.8 60.0,5.2" fill="none" stroke="#548235" stroke-width="2"/><circle cx="0.0" cy="9.3" r="2.5" fill="#548235"/><circle cx="20.0" cy="9.4" r="2.5" fill="#548235"/><circle cx="40.0" cy="14.8" r="2.5" fill="#548235"/><circle cx="60.0" cy="5.2" r="2.5" fill="#548235"/></svg></td><td class="cnt">28</td><td class="cnt">32</td><td class="cnt">32</td><td class="cnt">25</td><td class="cnt avg"><b>29.2</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,10.6 20.0,5.9 40.0,5.9 60.0,14.1" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="10.6" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="5.9" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="5.9" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="14.1" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">14</td><td class="team">地王1队</td><td class="rate yellow">90.9</td><td class="rate yellow">93.1</td><td class="rate yellow">92.3</td><td class="rate yellow">94.2</td><td class="rate avg yellow"><b>92.7</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,12.5 20.0,9.2 40.0,10.4 60.0,7.5" fill="none" stroke="#548235" stroke-width="2"/><circle cx="0.0" cy="12.5" r="2.5" fill="#548235"/><circle cx="20.0" cy="9.2" r="2.5" fill="#548235"/><circle cx="40.0" cy="10.4" r="2.5" fill="#548235"/><circle cx="60.0" cy="7.5" r="2.5" fill="#548235"/></svg></td><td class="cnt">28</td><td class="cnt">35</td><td class="cnt">31</td><td class="cnt">30</td><td class="cnt avg"><b>31.0</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,14.1 20.0,5.9 40.0,10.6 60.0,11.8" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="14.1" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="5.9" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="10.6" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="11.8" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">15</td><td class="team">江海4队</td><td class="rate yellow">90.6</td><td class="rate green">97.1</td><td class="rate yellow">90.3</td><td class="rate red">85.5</td><td class="rate avg yellow"><b>90.7</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,9.6 20.0,3.0 40.0,9.9 60.0,14.9" fill="none" stroke="#548235" stroke-width="2"/><circle cx="0.0" cy="9.6" r="2.5" fill="#548235"/><circle cx="20.0" cy="3.0" r="2.5" fill="#548235"/><circle cx="40.0" cy="9.9" r="2.5" fill="#548235"/><circle cx="60.0" cy="14.9" r="2.5" fill="#548235"/></svg></td><td class="cnt">17</td><td class="cnt">20</td><td class="cnt">20</td><td class="cnt">23</td><td class="cnt avg"><b>20.0</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,13.8 20.0,10.0 40.0,10.0 60.0,6.2" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="13.8" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="10.0" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="10.0" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="6.2" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">16</td><td class="team">天沙河三队</td><td class="rate red">83.0</td><td class="rate yellow">93.1</td><td class="rate red">84.0</td><td class="rate red">86.6</td><td class="rate avg red"><b>86.6</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,15.0 20.0,5.0 40.0,14.0 60.0,11.4" fill="none" stroke="#548235" stroke-width="2"/><circle cx="0.0" cy="15.0" r="2.5" fill="#548235"/><circle cx="20.0" cy="5.0" r="2.5" fill="#548235"/><circle cx="40.0" cy="14.0" r="2.5" fill="#548235"/><circle cx="60.0" cy="11.4" r="2.5" fill="#548235"/></svg></td><td class="cnt">16</td><td class="cnt">20</td><td class="cnt">23</td><td class="cnt">17</td><td class="cnt avg"><b>19.0</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,14.1 20.0,9.4 40.0,5.9 60.0,12.9" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="14.1" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="9.4" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="5.9" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="12.9" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">17</td><td class="team">地王2队</td><td class="rate yellow">91.0</td><td class="rate red">79.5</td><td class="rate yellow">91.1</td><td class="rate yellow">92.0</td><td class="rate avg red"><b>89.0</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,5.3 20.0,15.6 40.0,5.2 60.0,4.4" fill="none" stroke="#548235" stroke-width="2"/><circle cx="0.0" cy="5.3" r="2.5" fill="#548235"/><circle cx="20.0" cy="15.6" r="2.5" fill="#548235"/><circle cx="40.0" cy="5.2" r="2.5" fill="#548235"/><circle cx="60.0" cy="4.4" r="2.5" fill="#548235"/></svg></td><td class="cnt">11</td><td class="cnt">12</td><td class="cnt">14</td><td class="cnt">15</td><td class="cnt avg"><b>13.0</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,12.9 20.0,11.4 40.0,8.6 60.0,7.1" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="12.9" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="11.4" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="8.6" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="7.1" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">18</td><td class="team">新会2队</td><td class="rate red">89.9</td><td class="rate yellow">90.6</td><td class="rate red">80.8</td><td class="rate red">85.1</td><td class="rate avg red"><b>86.0</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,5.8 20.0,5.1 40.0,14.9 60.0,10.6" fill="none" stroke="#548235" stroke-width="2"/><circle cx="0.0" cy="5.8" r="2.5" fill="#548235"/><circle cx="20.0" cy="5.1" r="2.5" fill="#548235"/><circle cx="40.0" cy="14.9" r="2.5" fill="#548235"/><circle cx="60.0" cy="10.6" r="2.5" fill="#548235"/></svg></td><td class="cnt">29</td><td class="cnt">32</td><td class="cnt">33</td><td class="cnt">32</td><td class="cnt avg"><b>31.5</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,12.9 20.0,8.6 40.0,7.1 60.0,8.6" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="12.9" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="8.6" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="7.1" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="8.6" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">19</td><td class="team">白沙1队</td><td class="rate red">85.3</td><td class="rate red">83.7</td><td class="rate red">50.4</td><td class="rate red">82.1</td><td class="rate avg red"><b>74.0</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,2.2 20.0,2.9 40.0,17.8 60.0,3.7" fill="none" stroke="#548235" stroke-width="2"/><circle cx="0.0" cy="2.2" r="2.5" fill="#548235"/><circle cx="20.0" cy="2.9" r="2.5" fill="#548235"/><circle cx="40.0" cy="17.8" r="2.5" fill="#548235"/><circle cx="60.0" cy="3.7" r="2.5" fill="#548235"/></svg></td><td class="cnt">12</td><td class="cnt">11</td><td class="cnt">9</td><td class="cnt">5</td><td class="cnt avg"><b>9.2</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,5.9 20.0,7.1 40.0,9.4 60.0,14.1" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="5.9" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="7.1" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="9.4" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="14.1" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr><td class="rank">20</td><td class="team">天沙河二队</td><td class="rate yellow">91.1</td><td class="rate yellow">91.9</td><td class="rate red">73.5</td><td class="rate red">87.4</td><td class="rate avg red"><b>85.9</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,4.1 20.0,3.5 40.0,16.5 60.0,6.7" fill="none" stroke="#548235" stroke-width="2"/><circle cx="0.0" cy="4.1" r="2.5" fill="#548235"/><circle cx="20.0" cy="3.5" r="2.5" fill="#548235"/><circle cx="40.0" cy="16.5" r="2.5" fill="#548235"/><circle cx="60.0" cy="6.7" r="2.5" fill="#548235"/></svg></td><td class="cnt">18</td><td class="cnt">22</td><td class="cnt">16</td><td class="cnt">18</td><td class="cnt avg"><b>18.5</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,11.2 20.0,6.2 40.0,13.8 60.0,11.2" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="11.2" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="6.2" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="13.8" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="11.2" r="2.5" fill="#ED7D31"/></svg></td></tr>
+<tr class="total"><td></td><td><b>全市汇总</b></td><td class="rate"><b>92.4</b></td><td class="rate"><b>92.8</b></td><td class="rate"><b>89.9</b></td><td class="rate"><b>92.9</b></td><td class="rate avg"><b>91.9</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,8.5 20.0,7.8 40.0,12.3 60.0,7.7" fill="none" stroke="#548235" stroke-width="2"/><circle cx="0.0" cy="8.5" r="2.5" fill="#548235"/><circle cx="20.0" cy="7.8" r="2.5" fill="#548235"/><circle cx="40.0" cy="12.3" r="2.5" fill="#548235"/><circle cx="60.0" cy="7.7" r="2.5" fill="#548235"/></svg></td><td class="cnt"><b>467</b></td><td class="cnt"><b>521</b></td><td class="cnt"><b>489</b></td><td class="cnt"><b>501</b></td><td class="cnt avg"><b>494.5</b></td><td class="spark"><svg width="60" height="20" viewBox="0 0 60 20"><polyline points="0.0,18.4 20.0,1.6 40.0,11.6 60.0,7.8" fill="none" stroke="#ED7D31" stroke-width="2"/><circle cx="0.0" cy="18.4" r="2.5" fill="#ED7D31"/><circle cx="20.0" cy="1.6" r="2.5" fill="#ED7D31"/><circle cx="40.0" cy="11.6" r="2.5" fill="#ED7D31"/><circle cx="60.0" cy="7.8" r="2.5" fill="#ED7D31"/></svg></td></tr></tbody></table></div>
+
+
+<div class="footer">
+    —— 小龙咪AI助理 · 自动生成 ——
 </div>
-
-<div class="card">
-  <div class="card-title">👥 各小队明细</div>
-  <div class="squad-grid">
-    <div class="squad-card">
-      <div class="squad-card-header">
-        <div>
-          <div class="squad-card-name">天沙河畅跑2队</div>
-          <div class="squad-card-station">江门市内天沙河众包</div>
-        </div>
-        <div class="squad-card-rate" style="color:#22c55e">94%</div>
-      </div>
-      <div style="font-size:11px;color:#6b7280;margin-bottom:8px">
-        出勤率 88%（15/17人） · 排班49班次出勤46
-      </div>
-      <div class="squad-periods">
-        <div class="period-pill" style="background:#f0fdf4;color:#22c55e"><span class="period-pill-label">早餐</span> <span style="font-weight:700">100%</span></div>
-        <div class="period-pill" style="background:#f0fdf4;color:#22c55e"><span class="period-pill-label">午高峰</span> <span style="font-weight:700">93%</span></div>
-        <div class="period-pill" style="background:#f0fdf4;color:#22c55e"><span class="period-pill-label">下午茶</span> <span style="font-weight:700">92%</span></div>
-        <div class="period-pill" style="background:#f0fdf4;color:#22c55e"><span class="period-pill-label">●晚高峰</span> <span style="font-weight:700">94%</span></div>
-        <div class="period-pill" style="background:#f3f4f6;color:#9ca3af"><span class="period-pill-label">夜宵1</span> <span>—</span></div>
-        <div class="period-pill" style="background:#f0fdf4;color:#22c55e"><span class="period-pill-label">夜宵2</span> <span style="font-weight:700">100%</span></div>
-      </div>
-    </div>
-    <div class="squad-card">
-      <div class="squad-card-header">
-        <div>
-          <div class="squad-card-name">天沙河畅跑3队</div>
-          <div class="squad-card-station">江门市内天沙河众包</div>
-        </div>
-        <div class="squad-card-rate" style="color:#22c55e">96%</div>
-      </div>
-      <div style="font-size:11px;color:#6b7280;margin-bottom:8px">
-        出勤率 94%（17/18人） · 排班46班次出勤44
-      </div>
-      <div class="squad-periods">
-        <div class="period-pill" style="background:#f0fdf4;color:#22c55e"><span class="period-pill-label">早餐</span> <span style="font-weight:700">100%</span></div>
-        <div class="period-pill" style="background:#f0fdf4;color:#22c55e"><span class="period-pill-label">午高峰</span> <span style="font-weight:700">100%</span></div>
-        <div class="period-pill" style="background:#f0fdf4;color:#22c55e"><span class="period-pill-label">下午茶</span> <span style="font-weight:700">100%</span></div>
-        <div class="period-pill" style="background:#f0fdf4;color:#22c55e"><span class="period-pill-label">●晚高峰</span> <span style="font-weight:700">92%</span></div>
-        <div class="period-pill" style="background:#f3f4f6;color:#9ca3af"><span class="period-pill-label">夜宵1</span> <span>—</span></div>
-        <div class="period-pill" style="background:#f3f4f6;color:#999"><span class="period-pill-label">夜宵2</span> <span style="font-weight:700">0%</span></div>
-      </div>
-    </div>
-    <div class="squad-card">
-      <div class="squad-card-header">
-        <div>
-          <div class="squad-card-name">白沙畅跑1队</div>
-          <div class="squad-card-station">江门市内白沙众包</div>
-        </div>
-        <div class="squad-card-rate" style="color:#22c55e">96%</div>
-      </div>
-      <div style="font-size:11px;color:#6b7280;margin-bottom:8px">
-        出勤率 89%（8/9人） · 排班24班次出勤23
-      </div>
-      <div class="squad-periods">
-        <div class="period-pill" style="background:#f3f4f6;color:#999"><span class="period-pill-label">早餐</span> <span style="font-weight:700">0%</span></div>
-        <div class="period-pill" style="background:#f0fdf4;color:#22c55e"><span class="period-pill-label">午高峰</span> <span style="font-weight:700">100%</span></div>
-        <div class="period-pill" style="background:#f0fdf4;color:#22c55e"><span class="period-pill-label">下午茶</span> <span style="font-weight:700">100%</span></div>
-        <div class="period-pill" style="background:#fffbeb;color:#f59e0b"><span class="period-pill-label">●晚高峰</span> <span style="font-weight:700">88%</span></div>
-        <div class="period-pill" style="background:#f3f4f6;color:#9ca3af"><span class="period-pill-label">夜宵1</span> <span>—</span></div>
-        <div class="period-pill" style="background:#f3f4f6;color:#999"><span class="period-pill-label">夜宵2</span> <span style="font-weight:700">0%</span></div>
-      </div>
-    </div>
-    <div class="squad-card">
-      <div class="squad-card-header">
-        <div>
-          <div class="squad-card-name">白沙畅跑2队</div>
-          <div class="squad-card-station">江门市内白沙众包</div>
-        </div>
-        <div class="squad-card-rate" style="color:#22c55e">98%</div>
-      </div>
-      <div style="font-size:11px;color:#6b7280;margin-bottom:8px">
-        出勤率 94%（30/32人） · 排班89班次出勤87
-      </div>
-      <div class="squad-periods">
-        <div class="period-pill" style="background:#f0fdf4;color:#22c55e"><span class="period-pill-label">早餐</span> <span style="font-weight:700">100%</span></div>
-        <div class="period-pill" style="background:#f0fdf4;color:#22c55e"><span class="period-pill-label">午高峰</span> <span style="font-weight:700">97%</span></div>
-        <div class="period-pill" style="background:#f0fdf4;color:#22c55e"><span class="period-pill-label">下午茶</span> <span style="font-weight:700">100%</span></div>
-        <div class="period-pill" style="background:#f0fdf4;color:#22c55e"><span class="period-pill-label">●晚高峰</span> <span style="font-weight:700">96%</span></div>
-        <div class="period-pill" style="background:#f3f4f6;color:#9ca3af"><span class="period-pill-label">夜宵1</span> <span>—</span></div>
-        <div class="period-pill" style="background:#f0fdf4;color:#22c55e"><span class="period-pill-label">夜宵2</span> <span style="font-weight:700">100%</span></div>
-      </div>
-    </div>
-    <div class="squad-card">
-      <div class="squad-card-header">
-        <div>
-          <div class="squad-card-name">新会畅跑1队</div>
-          <div class="squad-card-station">江门市郊新会众包</div>
-        </div>
-        <div class="squad-card-rate" style="color:#22c55e">94%</div>
-      </div>
-      <div style="font-size:11px;color:#6b7280;margin-bottom:8px">
-        出勤率 89%（34/38人） · 排班106班次出勤100
-      </div>
-      <div class="squad-periods">
-        <div class="period-pill" style="background:#f0fdf4;color:#22c55e"><span class="period-pill-label">早餐</span> <span style="font-weight:700">100%</span></div>
-        <div class="period-pill" style="background:#f0fdf4;color:#22c55e"><span class="period-pill-label">午高峰</span> <span style="font-weight:700">94%</span></div>
-        <div class="period-pill" style="background:#f0fdf4;color:#22c55e"><span class="period-pill-label">下午茶</span> <span style="font-weight:700">93%</span></div>
-        <div class="period-pill" style="background:#f0fdf4;color:#22c55e"><span class="period-pill-label">●晚高峰</span> <span style="font-weight:700">94%</span></div>
-        <div class="period-pill" style="background:#f3f4f6;color:#9ca3af"><span class="period-pill-label">夜宵1</span> <span>—</span></div>
-        <div class="period-pill" style="background:#f0fdf4;color:#22c55e"><span class="period-pill-label">夜宵2</span> <span style="font-weight:700">100%</span></div>
-      </div>
-    </div>
-    <div class="squad-card">
-      <div class="squad-card-header">
-        <div>
-          <div class="squad-card-name">新会畅跑2队</div>
-          <div class="squad-card-station">江门市郊新会众包</div>
-        </div>
-        <div class="squad-card-rate" style="color:#22c55e">93%</div>
-      </div>
-      <div style="font-size:11px;color:#6b7280;margin-bottom:8px">
-        出勤率 85%（23/27人） · 排班69班次出勤64
-      </div>
-      <div class="squad-periods">
-        <div class="period-pill" style="background:#f0fdf4;color:#22c55e"><span class="period-pill-label">早餐</span> <span style="font-weight:700">100%</span></div>
-        <div class="period-pill" style="background:#f0fdf4;color:#22c55e"><span class="period-pill-label">午高峰</span> <span style="font-weight:700">91%</span></div>
-        <div class="period-pill" style="background:#f0fdf4;color:#22c55e"><span class="period-pill-label">下午茶</span> <span style="font-weight:700">93%</span></div>
-        <div class="period-pill" style="background:#f0fdf4;color:#22c55e"><span class="period-pill-label">●晚高峰</span> <span style="font-weight:700">90%</span></div>
-        <div class="period-pill" style="background:#f3f4f6;color:#9ca3af"><span class="period-pill-label">夜宵1</span> <span>—</span></div>
-        <div class="period-pill" style="background:#f0fdf4;color:#22c55e"><span class="period-pill-label">夜宵2</span> <span style="font-weight:700">100%</span></div>
-      </div>
-    </div>
-    <div class="squad-card">
-      <div class="squad-card-header">
-        <div>
-          <div class="squad-card-name">新会畅跑3队</div>
-          <div class="squad-card-station">江门市郊新会众包</div>
-        </div>
-        <div class="squad-card-rate" style="color:#22c55e">100%</div>
-      </div>
-      <div style="font-size:11px;color:#6b7280;margin-bottom:8px">
-        出勤率 95%（35/37人） · 排班86班次出勤86
-      </div>
-      <div class="squad-periods">
-        <div class="period-pill" style="background:#f0fdf4;color:#22c55e"><span class="period-pill-label">早餐</span> <span style="font-weight:700">100%</span></div>
-        <div class="period-pill" style="background:#f0fdf4;color:#22c55e"><span class="period-pill-label">午高峰</span> <span style="font-weight:700">100%</span></div>
-        <div class="period-pill" style="background:#f0fdf4;color:#22c55e"><span class="period-pill-label">下午茶</span> <span style="font-weight:700">100%</span></div>
-        <div class="period-pill" style="background:#f0fdf4;color:#22c55e"><span class="period-pill-label">●晚高峰</span> <span style="font-weight:700">100%</span></div>
-        <div class="period-pill" style="background:#f3f4f6;color:#9ca3af"><span class="period-pill-label">夜宵1</span> <span>—</span></div>
-        <div class="period-pill" style="background:#f0fdf4;color:#22c55e"><span class="period-pill-label">夜宵2</span> <span style="font-weight:700">100%</span></div>
-      </div>
-    </div>
-    <div class="squad-card">
-      <div class="squad-card-header">
-        <div>
-          <div class="squad-card-name">新会畅跑4队</div>
-          <div class="squad-card-station">江门市郊新会众包</div>
-        </div>
-        <div class="squad-card-rate" style="color:#22c55e">96%</div>
-      </div>
-      <div style="font-size:11px;color:#6b7280;margin-bottom:8px">
-        出勤率 95%（36/38人） · 排班102班次出勤98
-      </div>
-      <div class="squad-periods">
-        <div class="period-pill" style="background:#f0fdf4;color:#22c55e"><span class="period-pill-label">早餐</span> <span style="font-weight:700">100%</span></div>
-        <div class="period-pill" style="background:#f0fdf4;color:#22c55e"><span class="period-pill-label">午高峰</span> <span style="font-weight:700">95%</span></div>
-        <div class="period-pill" style="background:#f0fdf4;color:#22c55e"><span class="period-pill-label">下午茶</span> <span style="font-weight:700">100%</span></div>
-        <div class="period-pill" style="background:#f0fdf4;color:#22c55e"><span class="period-pill-label">●晚高峰</span> <span style="font-weight:700">93%</span></div>
-        <div class="period-pill" style="background:#f3f4f6;color:#9ca3af"><span class="period-pill-label">夜宵1</span> <span>—</span></div>
-        <div class="period-pill" style="background:#f0fdf4;color:#22c55e"><span class="period-pill-label">夜宵2</span> <span style="font-weight:700">100%</span></div>
-      </div>
-    </div>
-    <div class="squad-card">
-      <div class="squad-card-header">
-        <div>
-          <div class="squad-card-name">北新畅跑1队</div>
-          <div class="squad-card-station">江门市内北新区众包</div>
-        </div>
-        <div class="squad-card-rate" style="color:#22c55e">92%</div>
-      </div>
-      <div style="font-size:11px;color:#6b7280;margin-bottom:8px">
-        出勤率 91%（29/32人） · 排班93班次出勤86
-      </div>
-      <div class="squad-periods">
-        <div class="period-pill" style="background:#fffbeb;color:#f59e0b"><span class="period-pill-label">早餐</span> <span style="font-weight:700">86%</span></div>
-        <div class="period-pill" style="background:#f0fdf4;color:#22c55e"><span class="period-pill-label">午高峰</span> <span style="font-weight:700">94%</span></div>
-        <div class="period-pill" style="background:#f0fdf4;color:#22c55e"><span class="period-pill-label">下午茶</span> <span style="font-weight:700">92%</span></div>
-        <div class="period-pill" style="background:#f0fdf4;color:#22c55e"><span class="period-pill-label">●晚高峰</span> <span style="font-weight:700">93%</span></div>
-        <div class="period-pill" style="background:#f3f4f6;color:#9ca3af"><span class="period-pill-label">夜宵1</span> <span>—</span></div>
-        <div class="period-pill" style="background:#f0fdf4;color:#22c55e"><span class="period-pill-label">夜宵2</span> <span style="font-weight:700">100%</span></div>
-      </div>
-    </div>
-    <div class="squad-card">
-      <div class="squad-card-header">
-        <div>
-          <div class="squad-card-name">北新畅跑3队</div>
-          <div class="squad-card-station">江门市内北新区众包</div>
-        </div>
-        <div class="squad-card-rate" style="color:#22c55e">100%</div>
-      </div>
-      <div style="font-size:11px;color:#6b7280;margin-bottom:8px">
-        出勤率 97%（31/32人） · 排班97班次出勤97
-      </div>
-      <div class="squad-periods">
-        <div class="period-pill" style="background:#f0fdf4;color:#22c55e"><span class="period-pill-label">早餐</span> <span style="font-weight:700">100%</span></div>
-        <div class="period-pill" style="background:#f0fdf4;color:#22c55e"><span class="period-pill-label">午高峰</span> <span style="font-weight:700">100%</span></div>
-        <div class="period-pill" style="background:#f0fdf4;color:#22c55e"><span class="period-pill-label">下午茶</span> <span style="font-weight:700">100%</span></div>
-        <div class="period-pill" style="background:#f0fdf4;color:#22c55e"><span class="period-pill-label">●晚高峰</span> <span style="font-weight:700">100%</span></div>
-        <div class="period-pill" style="background:#f3f4f6;color:#9ca3af"><span class="period-pill-label">夜宵1</span> <span>—</span></div>
-        <div class="period-pill" style="background:#f0fdf4;color:#22c55e"><span class="period-pill-label">夜宵2</span> <span style="font-weight:700">100%</span></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="card">
-  <div class="card-title">📋 今日小结</div>
-  <div class="summary-row">
-    <div class="summary-badge badge-green">✅ 达标（≥90%）：10 队 — 天沙河畅跑2队 · 天沙河畅跑3队 · 白沙畅跑1队 · 白沙畅跑2队 · 新会畅跑1队 · 新会畅跑2队 · 新会畅跑3队 · 新会畅跑4队 · 北新畅跑1队 · 北新畅跑3队</div>
-    <div class="summary-badge badge-green">🏆 最强小队：新会畅跑3队（100%）</div>
-  </div>
-</div>
-
-<div class="footer">——来自小龙咪AI助理 · 数据截止 17:52 · 仅供参考</div>
-
 </div>
 </body>
 </html>
