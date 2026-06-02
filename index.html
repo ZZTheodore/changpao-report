@@ -151,11 +151,11 @@ function buildPanel(panelId,rateKey,avgKey,countKey,cavgKey,accent){
         html+=`<div class="chip ${colorCls(r[avgKey])}" onclick="showDetail('${panelId}','${r.lp_team}')">${i+1}. ${r.lp_team} (${r[avgKey]}%)</div>`;
     });
     html+=`</div></div><div id="detail-${panelId}" class="detail-card" style="display:none"></div>`;
-    html+=`<div class="detail-card"><h3 style="margin-bottom:12px;font-size:15px">📋 全队排名</h3>
+    html+=`<div class="detail-card"><h3 style="margin-bottom:12px;font-size:15px">📋 江门市全站点排名</h3>
     <div style="overflow-x:auto"><table class="rank-table"><thead><tr>
     <th>名次</th><th style="text-align:left">小队</th><th>骑士长</th>`;
     weeks.forEach(w=>{html+=`<th>${w}</th>`;});
-    html+=`<th>4周平均</th><th>趋势</th><th>人数</th></tr></thead><tbody>`;
+    html+=`<th>5月平均</th><th>吻合率变化趋势</th><th>周平均规模</th></tr></thead><tbody>`;
     sorted.forEach((r,i)=>{
         let rates=r[rateKey];
         html+=`<tr><td class="rank-num">${i+1}</td>
@@ -185,16 +185,16 @@ function showDetail(panelId,teamName){
     </div><div class="detail-badge ${colorCls(r.comb_avg)}">${r.comb_avg}%</div></div>`;
     
     h+=`<div class="metrics-grid">
-        <div class="metric-box"><div class="label">综合吻合率</div><div class="val" style="color:${colorHex(r.comb_avg)}">${r.comb_avg}%</div>
+        <div class="metric-box"><div class="label">综合吻合率（5月均）</div><div class="val" style="color:${colorHex(r.comb_avg)}">${r.comb_avg}%</div>
             <div class="sub">${Math.round(r.comb_ca)}人/周</div></div>
-        <div class="metric-box"><div class="label">乐跑吻合率</div><div class="val" style="color:${colorHex(r.lp_avg)}">${r.lp_avg}%</div>
+        <div class="metric-box"><div class="label">乐跑吻合率（5月均）</div><div class="val" style="color:${colorHex(r.lp_avg)}">${r.lp_avg}%</div>
             <div class="sub">${Math.round(r.lp_ca)}人/周</div></div>
-        <div class="metric-box"><div class="label">畅跑吻合率</div><div class="val" style="color:${colorHex(r.cp_avg)}">${r.cp_avg}%</div>
+        <div class="metric-box"><div class="label">畅跑吻合率（5月均）</div><div class="val" style="color:${colorHex(r.cp_avg)}">${r.cp_avg}%</div>
             <div class="sub">${Math.round(r.cp_ca)}人/周</div></div>
     </div>`;
     
     // 4 charts: 乐跑吻合率 / 畅跑吻合率 / 乐跑人数 / 畅跑人数
-    h+=`<div class="chart-section"><h3>📈 4周趋势对比</h3><div class="chart-row">
+    h+=`<div class="chart-section"><h3>📈 5月趋势对比</h3><div class="chart-row">
         <div class="chart-box"><div class="chart-title">🔵 乐跑吻合率走势</div>
             <div class="chart-canvas">${makeSVG(r.lp_r,'#2E75B6',320,130,true)}</div></div>
         <div class="chart-box"><div class="chart-title">🟢 畅跑吻合率走势</div>
